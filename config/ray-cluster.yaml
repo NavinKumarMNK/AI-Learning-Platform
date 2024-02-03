@@ -1,0 +1,36 @@
+# This YAML file contains the configuration for a Ray cluster.
+# It specifies the cluster name, provider type, IP addresses of the head and worker nodes,
+cluster_name: vit-ray
+
+# The 'provider' section specifies the type of provider and the IP addresses of the head node and worker nodes.
+provider:
+  type: local
+  head_ip: 172.16.96.59
+  worker_ips: 
+   - 172.16.96.60
+   - 172.16.96.61
+   - 172.16.96.62
+   - 172.16.96.63
+   - 172.16.96.64
+   - 172.16.96.66
+   - 172.16.96.68
+   
+auth:
+  ssh_user: vit  # The SSH username for authentication
+  ssh_private_key: ~/.ssh/id_rsa  # The path to the SSH private key for authentication
+
+
+min_workers: 4  # Minimum number of workers in the cluster
+max_workers: 8  # Maximum number of workers in the cluster
+upscaling_speed: 4.0  # Speed at which the cluster scales up
+idle_timeout_minutes: 3  # Timeout in minutes for idle workers to be terminated
+
+
+# This YAML file contains the configuration for starting and stopping Ray clusters.
+head_start_ray_commands:
+  - ray stop
+  - ulimit -c unlimited && ray start --head --port=6379 --autoscaling-config=~/ray_bootstrap_config.yaml
+# The commands to start Ray workers in the cluster.
+worker_start_ray_commands:
+  - ray stop
+  - ray start --address=$RAY_HEAD_IP:6379
