@@ -1,5 +1,7 @@
 # AI Learning Management System
 
+    - Code is written to be run on a local linux PC machine on the lab.
+
 ## Plan
 - [ ] Full website of Video Tutorials
 - [ ] Deployed Website 

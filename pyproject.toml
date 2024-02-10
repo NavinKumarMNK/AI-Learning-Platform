@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "ai-lms"
+version = "0.1.0"
+description = "Education-AI is a LLM model with RAG pipeline which behaves like a guide and able to solve doubts"
+authors = ["Navin Kumar M"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+ray = "2.9.0"
+
+[tool.poetry.group.dev.dependencies]
+ray = "2.9.0"
+fastapi = "0.108.0"
+vllm = "0.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,2 +1,5 @@
 .DS_Store
 data
+.pytest_cache
+logs
+__pycache__

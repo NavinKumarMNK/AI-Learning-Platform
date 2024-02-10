@@ -1,0 +1,13 @@
+app:
+  model: 
+    llm: HuggingFaceH4/zephyr-7b-beta # microsoft/phi-2
+    stt: distil-whisper/distil-small.en
+
+loggers:
+  log: True
+  console:
+    rich: false
+  file:
+    filename: ./logs/log.txt
+    mode: w
+
