@@ -1,13 +1,27 @@
 app:
   model: 
-    llm: HuggingFaceH4/zephyr-7b-beta # microsoft/phi-2
-    stt: distil-whisper/distil-small.en
+    llm: microsoft/phi-2 # HuggingFaceH4/zephyr-7b-beta 
+    stt: Systran/faster-distil-whisper-small.en # distil-whisper/distil-small.en
+    emb: BAAI/bge-base-en-v1.5
+
+llm:
+  serve_config:
+    model: microsoft/phi-2  # name / path
+    download_dir: null # path to model
+    load_format: auto  # format of model {auto, pt, dummy, safetensors}
+    dtype: auto  # data type {auto, float32, float16, bfloat16}
+    max_model_len: 2048  # max length of model
+    worker_use_ray: false  # use ray for worker
+    pipeline_parallel_size: 1  # size of pipeline parallel
+    tensor_parallel_size: 1  # size of tensor parallel
+    engine_use_ray: false  # use ray for engine
+    # gpu_memory_utilization: 0.95  # gpu memory utilization
 
 loggers:
-  log: True
+  log: true
   console:
     rich: false
   file:
-    filename: ./logs/log.txt
+    filename: ./logs/logs.log
     mode: w
 

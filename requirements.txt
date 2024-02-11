@@ -9,3 +9,5 @@ numexpr==2.7.3
 shyaml==0.6.2
 huggingface_hub[cli]==0.1
 faster-whishper==0.10.0
+hf-transfer==0.1.5
+fastembed==0.1.0
