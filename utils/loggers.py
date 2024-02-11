@@ -1,6 +1,7 @@
-# author: entropy(NavinKumarMNK)
 import logging
 from abc import ABC
+
+from utils.parsers import DictObjectParser
 
 try:
     from rich.logging import RichHandler
@@ -36,6 +37,9 @@ class Logger(ABC):
     def critical(self, msg: str, *args, **kwargs) -> None:
         self.logger.critical(msg, *args, **kwargs)
 
+    def info(self, msg: str, *args, **kwargs) -> None:
+        self.logger.info(msg, *args, **kwargs)
+
 
 class ConsoleLogger(Logger):
     """Console logger for logging to console"""
@@ -54,7 +58,7 @@ class ConsoleLogger(Logger):
         else:
             self.handler = logging.StreamHandler()
 
-        self.handler.setLevel(logging.DEBUG)
+        self.handler.setLevel(logging.INFO)
         self.logger.addHandler(self.handler)
 
 
@@ -64,62 +68,47 @@ class FileLogger(Logger):
     def __init__(self, name: str, filename: str, mode="w"):
         super().__init__(name)
         self.handler = logging.FileHandler(filename, mode=mode)
-        self.handler.setLevel(logging.DEBUG)
+        self.handler.setLevel(logging.INFO)
 
         self.handler.setFormatter(
             logging.Formatter(
-                "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+                "[%(asctime)s T%(thread).5s P%(process)s %(levelname)7s %(name)s:%(lineno)s] %(message)s"
             )
         )
 
         self.logger.addHandler(self.handler)
 
 
-class GroupLogger:
-    """Group logger for logging to multiple loggers at once"""
+def load_loggers(config: DictObjectParser):
+    if config.console:
+        ConsoleLogger(name=__name__, rich=config.console.rich)
+    if config.file:
+        FileLogger(
+            name=__name__,
+            filename=config.file.filename,
+            mode=config.file.mode,
+        )
 
-    def __init__(self, loggers: list = None):
-        self.loggers = loggers
-
-    def debug(self, msg: str, *args, **kwargs) -> None:
-        for logger in self.loggers:
-            logger.debug(msg, *args, **kwargs)
-
-    def log(self, msg: str, *args, **kwargs) -> None:
-        for logger in self.loggers:
-            logger.log(msg, *args, **kwargs)
-
-    def exception(self, msg: str, *args, **kwargs) -> None:
-        for logger in self.loggers:
-            logger.exception(msg, *args, **kwargs)
-
-    def warning(self, msg: str, *args, **kwargs) -> None:
-        for logger in self.loggers:
-            logger.warning(msg, *args, **kwargs)
-
-    def error(self, msg: str, *args, **kwargs) -> None:
-        for logger in self.loggers:
-            logger.error(msg, *args, **kwargs)
-
-    def critical(self, msg: str, *args, **kwargs) -> None:
-        for logger in self.loggers:
-            logger.critical(msg, *args, **kwargs)
+    logger = logging.getLogger(
+        __name__,
+    )
+    return logger
 
 
 if __name__ == "__main__":
-    console_logger = ConsoleLogger("consolelogger", rich=True)
-    file_logger = FileLogger("filelogger", "test.log", mode="w")
-    group_logger = GroupLogger([console_logger, file_logger])
-
-    group_logger.debug("debug")
-    group_logger.log("log")
-    group_logger.exception("exception")
-    group_logger.warning("warning")
-    group_logger.error("error")
-    group_logger.critical("critical")
+    console_logger = ConsoleLogger(name="logger", rich=True)
+    file_logger = FileLogger(name="logger", filename="./logs/test.log", mode="w")
+    # console_logger = GroupLogger([console_logger, file_logger])
+    logger = logging.getLogger(name="logger")
+    logger.debug(msg="debug")
+    logger.log(msg="log", level=1)
+    logger.exception(msg="exception")
+    logger.warning(msg="warning")
+    logger.error(msg="error")
+    logger.critical(msg="critical")
 
     # log the error itself not the handled exception
     try:
         raise Exception("test")
     except Exception as e:
-        group_logger.exception("exception", exc_info=e)
+        logger.exception("exception", exc_info=e)

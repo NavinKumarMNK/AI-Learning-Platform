@@ -20,7 +20,7 @@ auth:
   ssh_private_key: ~/.ssh/id_rsa  # The path to the SSH private key for authentication
 
 
-min_workers: 4  # Minimum number of workers in the cluster
+min_workers: 8  # Minimum number of workers in the cluster
 max_workers: 8  # Maximum number of workers in the cluster
 upscaling_speed: 4.0  # Speed at which the cluster scales up
 idle_timeout_minutes: 3  # Timeout in minutes for idle workers to be terminated

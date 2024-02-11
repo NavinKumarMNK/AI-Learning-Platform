@@ -1,4 +1,3 @@
-# author: entropy(NavinKumarMNK)
 from typing import Dict
 
 import yaml
@@ -42,8 +41,8 @@ class DictObjectParser:
 class YamlParser:
     """Parses a yaml file to a dictionary object"""
 
-    def __init__(self, filename: str):
-        with open(filename, "r") as file:
+    def __init__(self, filepath: str):
+        with open(filepath, "r") as file:
             data = yaml.safe_load(file)
         self.obj = DictObjectParser(data)  # noqa: F841
 

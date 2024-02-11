@@ -1,0 +1,50 @@
+proxy_location: EveryNode
+
+http_options:
+  host: 0.0.0.0
+  port: 8000
+
+grpc_options:
+  port: 9000
+  grpc_servicer_functions: []
+
+applications:
+- name: llm
+  route_prefix: /llm
+  import_path: llm_serve:main
+  args:
+    config_key: llm
+  # runtime_env: 
+  #  working_dir: "/home"
+  #  excludes:
+  #    - "./docs"
+
+  deployments:
+  - name: VLLMDeployment
+    num_replicas: 1
+    max_concrrent_queries: 1
+    ray_actor_options:
+      num_gpus: 1
+    
+# - name: stt
+#  route_prefix: /stt
+#  import_path: stt_serve:app
+#  
+#  deployments:
+#  - name: STTDeployment
+#    num_replicas: 1
+#    max_concrrent_queries: 8
+#    ray_actor_options:
+#      num_gpus: 1
+
+
+# - name: embedding
+#  route_prefix: /embed
+#  import_path: emb_serve:app
+#  
+#  deployments:
+#  - name: EMBDeployment
+#    num_replicas: 1
+#    max_concrrent_queries: 8
+#    ray_actor_options:
+#      num_gpus: 1
