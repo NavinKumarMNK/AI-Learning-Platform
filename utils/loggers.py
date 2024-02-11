@@ -58,7 +58,7 @@ class ConsoleLogger(Logger):
         else:
             self.handler = logging.StreamHandler()
 
-        self.handler.setLevel(logging.INFO)
+        self.handler.setLevel(logging.NOTSET)
         self.logger.addHandler(self.handler)
 
 
@@ -68,7 +68,7 @@ class FileLogger(Logger):
     def __init__(self, name: str, filename: str, mode="w"):
         super().__init__(name)
         self.handler = logging.FileHandler(filename, mode=mode)
-        self.handler.setLevel(logging.INFO)
+        self.handler.setLevel(logging.NOTSET)
 
         self.handler.setFormatter(
             logging.Formatter(
@@ -79,18 +79,18 @@ class FileLogger(Logger):
         self.logger.addHandler(self.handler)
 
 
-def load_loggers(config: DictObjectParser):
+def load_loggers(config: DictObjectParser, name: str = __name__):
     if config.console:
-        ConsoleLogger(name=__name__, rich=config.console.rich)
+        ConsoleLogger(name=name, rich=config.console.rich)
     if config.file:
         FileLogger(
-            name=__name__,
+            name=name,
             filename=config.file.filename,
             mode=config.file.mode,
         )
 
     logger = logging.getLogger(
-        __name__,
+        name,
     )
     return logger
 

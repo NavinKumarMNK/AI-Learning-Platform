@@ -16,11 +16,12 @@ llm:
     tensor_parallel_size: 1  # size of tensor parallel
     engine_use_ray: false  # use ray for engine
     # gpu_memory_utilization: 0.95  # gpu memory utilization
+    enforce_eager: True
 
 loggers:
   log: true
   console:
-    rich: false
+    rich: true
   file:
     filename: ./logs/logs.log
     mode: w

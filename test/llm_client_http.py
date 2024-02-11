@@ -13,23 +13,36 @@ logger = logging.getLogger()
 
 async def generate_text(endpoint_url: str, payload: Dict) -> List[str]:
     result = []
+    headers = {"Content-Type": "application/json"}
+    print(payload)
+
     async with httpx.AsyncClient() as client:
-        response = await client.post(
-            endpoint_url,
-            json=payload,
-        )
-        if response.status_code == 200:
-            data = response.json()
-            if payload["stream"]:
-                for token in data["tokens"]:
-                    sys.stdout.write(token)
-                    sys.stdout.flush()
-            else:
-                result.append(data["tokens"])
+        if payload["stream"]:
+            async with client.stream(
+                method="POST",
+                url=endpoint_url,
+                json=payload,
+                headers=headers,
+                timeout=30,
+            ) as response:
+                if response.status_code == 200:
+                    async for line in response.aiter_lines():
+                        print("hello")
+                        # Process each line here
+                        sys.stdout.write(line)
+                        sys.stdout.flush()
+
+                else:
+                    print("hasdf")
+                    logger.error(f"HTTP status code: {response.status_code}")
+                    logger.error(response.text)
+                    response.raise_for_status()
         else:
-            logger.error(f"HTTP status code: {response.status_code}")
-            logger.error(response.text)
+            response = await client.post(
+                endpoint_url, json=payload, headers=headers, timeout=30
+            )
             response.raise_for_status()
+            result = response.json()
 
     return result
 
@@ -37,7 +50,7 @@ async def generate_text(endpoint_url: str, payload: Dict) -> List[str]:
 @click.command()
 @click.option("--host", default="localhost", help="Host")
 @click.option("--port", default=8000, help="Port")
-@click.option("--stream", is_flag=True, help="Stream")
+@click.option("--stream", default=True, help="Stream")
 @click.option("--max-tokens", default=512, help="Max tokens")
 @click.option("--temperature", default=0.7, help="Temperature")
 def main(
@@ -56,6 +69,7 @@ def main(
         "messages": [
             {"role": "user", "content": user_message},
         ],
+        "prompt": "Hey Hello and welcome",
         "stream": stream,
         "max_tokens": max_tokens,
         "temperature": temperature,
@@ -64,7 +78,7 @@ def main(
     if stream:
         asyncio.run(generate_text(url, payload))
     else:
-        result = asyncio.run(generate_text(url, user_message))
+        result = asyncio.run(generate_text(url, payload))
         print(result)
 
 

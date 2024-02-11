@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import uuid
@@ -5,7 +6,6 @@ from http import HTTPStatus
 from typing import AsyncGenerator, Dict, List, Optional, Tuple
 
 # from langchain_community.llms import VLLM
-import ray
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from ray import serve
@@ -30,12 +30,13 @@ from utils.parsers import DictObjectParser, YamlParser
 # FastAPI APP
 APP = FastAPI()
 
-
+"""
 @APP.exception_handler(RequestValidationError)
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     return create_error_response(HTTPStatus.BAD_REQUEST, str(exc))
+"""
 
 
 # VLLM Server Deployment
@@ -53,19 +54,21 @@ class VLLMDeployment:
             contains config for the deployment of llm
         """
         self.logger = logger
-        self.logger.info("VLLM Deployment Initialized")
-
         self.config = config
+        self.logger.debug("VLLM Deployment Initialized")
+
         async_engine_args = AsyncEngineArgs(**config.serve_config.to_dict())
-        self.logger.info(async_engine_args)
+        self.logger.debug(async_engine_args)
+
         # Engine Args
         self.engine = AsyncLLMEngine.from_engine_args(async_engine_args)
         self.engine_model_config = self.engine.engine.get_model_config()
         self.tokenizer = self.engine.engine.tokenizer
         self.max_model_len: float = self.config.serve_config.max_model_len
+        print(self.tokenizer)
 
-        self.logger.info(f"VLLM Engine Config: {self.engine_model_config}")
-        print(f"VLLM Engine Config: {self.engine_model_config}")
+        self.logger.debug(f"VLLM Engine Config: {self.engine_model_config}")
+        # print(f"VLLM Engine Config: {self.engine_model_config}")
 
         try:
             self.model_config = load_model_config(self.engine_model_config.model)
@@ -84,7 +87,7 @@ class VLLMDeployment:
     def _convert_prompt_to_tokens(
         self, prompt: str, request: GenerateRequest
     ) -> List[int]:
-        input_ids = self.tokenizer(prompt).input_ids
+        input_ids = self.tokenizer.encode(prompt)
         if self._check_length(input_ids=input_ids, request=request):
             return input_ids
 
@@ -113,13 +116,15 @@ class VLLMDeployment:
         async for request_output in output_generator:
             output = request_output.output[0]
             text_output = output.text[num_returned:]
+            print(text_output, "text_output")
             response = GenerateResponse(
                 output=text_output,
                 prompt_tokens=len(request_output.prompt_token_ids),
                 output_tokens=1,
                 finish_reason=output.finish_reason,
             )
-            yield (response.json() + "\n").encode("utf-8")
+            await asyncio.sleep(1)
+            yield response
             num_returned += len(text_output)
 
     async def _abort_request(self, request_id) -> None:
@@ -133,8 +138,9 @@ class VLLMDeployment:
     @APP.post("/generate")
     async def generate(
         self, request: GenerateRequest, raw_request: Request
-    ) -> Response:
+    ) -> GenerateResponse:
         """Generate Completion for the requested prompt"""
+        print(request, "Request")
         try:
             # either prompt or messages is provided
             if not request.prompt and not request.messages:
@@ -152,7 +158,7 @@ class VLLMDeployment:
                 )
             else:
                 return create_error_response(
-                    status_code=400,
+                    status_code=HTTPStatus.BAD_REQUEST,
                     message="Parameter 'messages' requires a model config ",
                 )
 
@@ -164,7 +170,7 @@ class VLLMDeployment:
             request_id = self._next_request_id()
 
             output_generator = self.engine.generate(
-                prompt=None,
+                prompt=prompt,
                 sampling_params=sampling_params,
                 request_id=request_id,
                 prompt_token_ids=prompt_token_ids,
@@ -186,10 +192,10 @@ class VLLMDeployment:
                         return Response(status_code=200)
                     final_output = request_output
 
-                text_outputs = final_output.output[0].text
+                text_outputs = final_output.outputs[0].text
                 prompt_tokens = len(final_output.prompt_token_ids)
-                output_tokens = len(final_output.output[0].token_ids)
-                finish_reason = final_output.output[0].finish_reason
+                output_tokens = len(final_output.outputs[0].token_ids)
+                finish_reason = final_output.outputs[0].finish_reason
 
                 return GenerateResponse(
                     output=text_outputs,
@@ -218,18 +224,10 @@ def main(args: Dict[str, str]) -> Application:
     yaml_parser = YamlParser(filepath=MAIN_CONFIG_FILE_PATH)
     CONFIG: DictObjectParser = yaml_parser.get_data()
 
+    print(CONFIG, "CONFIG")
     # load loggers
     if CONFIG.loggers.log:
-        logger: Logger = load_loggers(CONFIG.loggers)
+        logger: Logger = load_loggers(CONFIG.loggers, name=__name__)
 
     config_key: str = args.get("config_key")
     return VLLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
-
-
-if __name__ == "__main__":
-    """
-    ray.init(runtime_env={"working_dir": os.path.join(os.getcwd())})
-    serve.run(
-        main({"config_key": "llm"}),
-    )
-    """
