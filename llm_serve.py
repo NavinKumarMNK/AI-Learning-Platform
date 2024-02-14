@@ -30,13 +30,12 @@ from utils.parsers import DictObjectParser, YamlParser
 # FastAPI APP
 APP = FastAPI()
 
-"""
+
 @APP.exception_handler(RequestValidationError)
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     return create_error_response(HTTPStatus.BAD_REQUEST, str(exc))
-"""
 
 
 # VLLM Server Deployment
@@ -124,7 +123,8 @@ class VLLMDeployment:
                 finish_reason=output.finish_reason,
             )
             await asyncio.sleep(1)
-            yield response
+            print(response)
+            yield (response.json() + "\n").encode("utf-8")
             num_returned += len(text_output)
 
     async def _abort_request(self, request_id) -> None:
@@ -140,7 +140,6 @@ class VLLMDeployment:
         self, request: GenerateRequest, raw_request: Request
     ) -> GenerateResponse:
         """Generate Completion for the requested prompt"""
-        print(request, "Request")
         try:
             # either prompt or messages is provided
             if not request.prompt and not request.messages:
@@ -165,7 +164,9 @@ class VLLMDeployment:
             prompt_token_ids = self._convert_prompt_to_tokens(
                 prompt=prompt, request=request
             )
-            request_dict = request.dict(exclude=set(["prompt", "messages", "stream"]))
+            request_dict = request.model_dump(
+                exclude=set(["prompt", "messages", "stream"])
+            )
             sampling_params = SamplingParams(**request_dict)
             request_id = self._next_request_id()
 

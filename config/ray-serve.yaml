@@ -14,8 +14,7 @@ applications:
   import_path: llm_serve:main
   args:
     config_key: llm
-  # runtime_env: 
-  #  working_dir: "/home"
+  # working_dir: "."
   #  excludes:
   #    - "./docs"
 
@@ -24,7 +23,8 @@ applications:
     num_replicas: 1
     max_concrrent_queries: 1
     ray_actor_options:
-      num_gpus: 1
+      num_cpus: 24
+      num_gpus: 2
     
 # - name: stt
 #  route_prefix: /stt

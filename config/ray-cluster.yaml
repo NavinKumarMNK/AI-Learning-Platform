@@ -17,12 +17,12 @@ provider:
    
 auth:
   ssh_user: vit  # The SSH username for authentication
-  ssh_private_key: ~/.ssh/id_rsa  # The path to the SSH private key for authentication
+  # ssh_private_key: ~/.ssh/id_rsa  # The path to the SSH private key for authentication
 
 
-min_workers: 8  # Minimum number of workers in the cluster
-max_workers: 8  # Maximum number of workers in the cluster
-upscaling_speed: 4.0  # Speed at which the cluster scales up
+min_workers: 4  # Minimum number of workers in the cluster
+max_workers: 7  # Maximum number of workers in the cluster
+upscaling_speed: 1.0  # Speed at which the cluster scales up
 idle_timeout_minutes: 3  # Timeout in minutes for idle workers to be terminated
 
 
@@ -33,4 +33,4 @@ head_start_ray_commands:
 # The commands to start Ray workers in the cluster.
 worker_start_ray_commands:
   - ray stop
-  - ray start --address=$RAY_HEAD_IP:6379
+  - ray start --address='172.16.96.59:6379'
