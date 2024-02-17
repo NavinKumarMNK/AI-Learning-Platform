@@ -216,10 +216,11 @@ def main(args: Dict[str, str]) -> Application:
     # load env
     load_env()
     MAIN_CONFIG_FILE_PATH = os.getenv("MAIN_CONFIG_FILE_PATH")
-    if MAIN_CONFIG_FILE_PATH is None:
-        raise ConfigFileMissingError(
-            "MAIN_CONFIG_FILE_PATH environemental variable is missing."
-        )
+    MAIN_CONFIG_FILE_PATH = "./config.yaml"
+    # if MAIN_CONFIG_FILE_PATH is None:
+    #    raise ConfigFileMissingError(
+    #        "MAIN_CONFIG_FILE_PATH environemental variable is missing."
+    #    )
 
     # load main config file
     yaml_parser = YamlParser(filepath=MAIN_CONFIG_FILE_PATH)
@@ -232,3 +233,9 @@ def main(args: Dict[str, str]) -> Application:
 
     config_key: str = args.get("config_key")
     return VLLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
+
+'''
+if __name__ == '__main__':
+    app = main({"config_key": "llm"})
+    serve.run(app)
+'''

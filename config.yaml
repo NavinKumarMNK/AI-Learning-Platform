@@ -11,17 +11,17 @@ llm:
     load_format: auto  # format of model {auto, pt, dummy, safetensors}
     dtype: auto  # data type {auto, float32, float16, bfloat16}
     max_model_len: 2048  # max length of model
-    worker_use_ray: true  # use ray for worker
+    worker_use_ray: false  # use ray for worker
     pipeline_parallel_size: 1  # size of pipeline parallel
     tensor_parallel_size: 1  # size of tensor parallel
-    engine_use_ray: false  # use ray for engine
+    engine_use_ray: true  # use ray for engine
     # gpu_memory_utilization: 0.95  # gpu memory utilization
-    enforce_eager: True
+    enforce_eager: true
 
 loggers:
-  log: true
+  log: false
   console:
-    rich: true
+    rich: false
   file:
     filename: ./logs/logs.log
     mode: w

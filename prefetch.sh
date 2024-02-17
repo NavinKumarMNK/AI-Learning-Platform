@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load variables from .env file
-if [ -f .env ]; then
+if [ -f globals.env ]; then
     set -a
     . globals.env
     set +a

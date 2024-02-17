@@ -12,19 +12,22 @@ applications:
 - name: llm
   route_prefix: /llm
   import_path: llm_serve:main
+  ignore_reinit_error: true
   args:
     config_key: llm
-  # working_dir: "."
-  #  excludes:
-  #    - "./docs"
+  runtime_env:
+    working_dir: "https://github.com/NavinKumarMNK/AI-LMS/archive/refs/heads/main.zip"
+    # excludes:
+    #  - "./docs"
+    #  - "./logs"
 
   deployments:
   - name: VLLMDeployment
     num_replicas: 1
     max_concrrent_queries: 1
     ray_actor_options:
-      num_cpus: 24
-      num_gpus: 2
+      num_cpus: 12
+      num_gpus: 1
     
 # - name: stt
 #  route_prefix: /stt
