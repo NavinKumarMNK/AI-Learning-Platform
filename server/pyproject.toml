@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ai-lms"
+name = "megacad"
 version = "0.1.0"
 description = ""
 authors = ["Entropy <70720874+NavinKumarMNK@users.noreply.github.com>"]
@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "~3.8"
 django = "4.2.0"
+psycopg2-binary = "^2.9.9"
 
 
 [build-system]
