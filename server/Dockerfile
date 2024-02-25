@@ -1,5 +1,6 @@
 FROM python:3.8.18-slim-bullseye
 ARG DEBIAN_FRONTEND=noninteractive
+ENV PYTHONBUFFERED 1
 
 # Install system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -20,6 +21,8 @@ ARG INSTALL_DEV=false
 RUN if [ "$INSTALL_DEV" = "true" ]; then poetry install; else poetry install --only main; fi
 
 EXPOSE 8000
+
+RUN python3 manage.py collectstatic
 
 # Run the application
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
