@@ -3,7 +3,25 @@
 import os
 import sys
 
+import django
+from django.contrib.auth import get_user_model
 from dotenv import load_dotenv
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings")
+django.setup()
+User = get_user_model()
+
+
+def create_superuser():
+    if not User.objects.filter(username="admin").exists():
+        User.objects.filter(
+            username=os.environ.get("DJANGO_ADMIN_USERNAME"),
+        ).delete()
+        User.objects.create_superuser(
+            os.environ.get("DJANGO_ADMIN_USERNAME"),
+            os.environ.get("DJANGO_ADMIN_EMAIL_ID"),
+            os.environ.get("DJANGO_ADMIN_PASSWORD"),
+        )
 
 
 def main():
@@ -22,4 +40,5 @@ def main():
 
 if __name__ == "__main__":
     load_dotenv()
+    create_superuser()
     main()
