@@ -22,6 +22,7 @@ RUN if [ "$INSTALL_DEV" = "true" ]; then poetry install; else poetry install --o
 
 EXPOSE 8000
 
+ENV DJANGO_DEBUG true
 RUN python3 manage.py collectstatic
 
 # Run the application

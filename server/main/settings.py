@@ -24,7 +24,7 @@ MEGACAD_DIR = os.path.join(BASE_DIR, "megacad")
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get("DJANGO_DEBUG") or False
 ALLOWED_HOSTS = ["*"]
 INTERNAL_IPS = ["127.0.0.1"]
 
@@ -51,7 +51,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    # "whitenoise.middleware.WhiteNoiseMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "lib.meglib.middleware.errors.Log500ErrorsMiddleware",
 ]
 
 REST_FRAMEWORK = {
@@ -136,16 +137,18 @@ STATIC_URL = "/static/"
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static/megacad/")]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static/megacad/static"),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-"""
+
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
-}"""
+}
