@@ -1,17 +1,15 @@
-"""
-ASGI config for main project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
-"""
-
 import os
 
-import fastapi
 from django.core.asgi import get_asgi_application
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings")
+app = FastAPI()
 
+__all__ = [app]
 application = get_asgi_application()
+
+
+app.mount("/static", StaticFiles(directory="staticfiles"), name="static")
+app.mount("/", application)

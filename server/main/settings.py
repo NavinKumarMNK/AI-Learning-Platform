@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_cassandra_engine",
     "megacad",
+    "chat",
     "rest_framework",
     "corsheaders",
 ]
@@ -82,11 +84,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "main.wsgi.application"
-ASGI_APPLICATION = "main.asgi.application"
+ASGI_APPLICATION = "main.asgi.app"
 
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -95,13 +95,21 @@ DATABASES = {
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
         "HOST": os.environ.get("POSTGRES_HOST"),
         "PORT": os.environ.get("POSTGRES_PORT"),
-    }
+    },
+    "cassandra": {
+        "ENGINE": "django_cassandra_engine",
+        "NAME": os.environ.get("CASSANDRA_NAME"),
+        "HOST": os.environ.get("CASSANDRA_HOST"),
+        "USER": os.environ.get("CASSANDRA_USER"),
+        "PASSWORD": os.environ.get("CASSANDRA_PASSWORD"),
+        "OPTIONS": {
+            "replication": {"strategy_class": "SimpleStrategy", "replication_factor": 1}
+        },
+    },
 }
 
 
 # Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -119,24 +127,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
 STATIC_URL = "/static/"
-
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static/megacad/static"),
 ]

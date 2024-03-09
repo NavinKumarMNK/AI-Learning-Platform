@@ -7,6 +7,7 @@ import django
 from django.contrib.auth import get_user_model
 from dotenv import load_dotenv
 
+load_dotenv()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings")
 django.setup()
 User = get_user_model()
@@ -39,6 +40,5 @@ def main():
 
 
 if __name__ == "__main__":
-    load_dotenv()
     create_superuser()
     main()

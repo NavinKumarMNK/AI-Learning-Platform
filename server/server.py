@@ -4,6 +4,7 @@ import asyncio
 import os
 
 import django
+from cassandra.cqlengine.management import sync_table
 from django.contrib.auth import get_user_model
 from dotenv import load_dotenv
 
@@ -27,10 +28,10 @@ async def create_superuser():
 
 def main():
     try:
-        from main.asgi import application
+        from main.asgi import app, application
     except ImportError as exc:
         raise ImportError() from exc
-    return application
+    return app
 
 
 loop = asyncio.get_event_loop()
