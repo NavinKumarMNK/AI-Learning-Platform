@@ -6,6 +6,7 @@ ENV PYTHONBUFFERED 1
 RUN apt-get update && apt-get install --no-install-recommends -y \
     gcc \
     libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --upgrade pip
 RUN pip install poetry
@@ -15,19 +16,14 @@ RUN poetry config virtualenvs.create false
 
 # Poetry install
 COPY . /app
-WORKDIR /app
+WORKDIR /app 
+# ENV PYTHONPATH=/
 
 ARG INSTALL_DEV=false
 RUN if [ "$INSTALL_DEV" = "true" ]; then poetry install; else poetry install --no-dev; fi
 
 EXPOSE 8000
 
-ENV DJANGO_DEBUG=False
+ENV DJANGO_DEBUG=false
 
-# Run Django commands
-RUN python3 manage.py makemigrations
-RUN python3 manage.py migrate
-RUN python3 manage.py collectstatic --no-input
-
-# Run the application
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT [ "/app/entrypoint.sh" ]

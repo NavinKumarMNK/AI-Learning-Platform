@@ -1,22 +1,28 @@
 # AI-Learning Platform
 
-## Installation
+## Dev Server
+- before running the server's docker compose make the `entrypoint.sh` file executable
 ```bash
-poetry install
+chmod +x entrypoint.sh
 ```
-
-## Start the Server
 ```bash
-poetry run python manage.py runserver
+make run-dev  # run the docker-compose up
 ```
+- view the `Makefile` for commands like `stop`, `clean`, `rmi`, `shell` etc.,
 
 ## Environment Variables Schema
 ```env
-POSTGRES_DB=
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-DJANGO_SECRET_KEY=
-DJANGO_ADMIN_USERNAME=
-DJANGO_ADMIN_EMAIL_ID=
-DJANGO_ADMIN_PASSWORD=
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=postgres
+POSTGRES_PORT=postgres
+CASSANDRA_NAME=cassandra
+CASSANDRA_HOST=cassandra
+CASSANDRA_USER=cassandra
+CASSANDRA_PASSWORD=cassandra
+DJANGO_SECRET_KEY=django
+DJANGO_ADMIN_USERNAME=admin
+DJANGO_ADMIN_EMAIL_ID=admin
+DJANGO_ADMIN_PASSWORD=admin
 ```

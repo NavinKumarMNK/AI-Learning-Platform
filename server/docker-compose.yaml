@@ -1,5 +1,6 @@
+version: '3'
 services:
-  db:
+  postgres:
     image: postgres
     ports:
       - "5432:5432"
@@ -7,18 +8,30 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  cassandra:
+    image: cassandra
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_CLUSTER_NAME=${CASSANDRA_CLUSTER_NAME}
+      - CASSANDRA_ENDPOINT_SNITCH=${CASSANDRA_ENDPOINT_SNITCH}
+      - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     environment:
+      - DJANGO_DEBUG=True
       - POSTGRES_NAME=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - CASSANDRA_HOST=${CASSANDRA_HOST}
+      - CASSANDRA_KEYSPACE=${CASSANDRA_KEYSPACE}
+      - CASSANDRA_USER=${CASSANDRA_USER}
+      - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
     depends_on:
-      - db
+      - postgres
+      - cassandra
