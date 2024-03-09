@@ -1,4 +1,5 @@
 import traceback
+from pprint import pprint
 
 
 class Log500ErrorsMiddleware:
@@ -10,10 +11,10 @@ class Log500ErrorsMiddleware:
         return response
 
     def process_exception(self, request, exception):
-        print("\n----intercepted 500 error stack trace----")
-        print(exception)
-        print(type(exception))
+        pprint("\n----intercepted 500 error stack trace----")
+        pprint(exception)
+        pprint(type(exception))
         tb = exception.__traceback__
-        print(traceback.format_exception(type(exception), exception, tb))
-        print("----\n")
+        pprint(traceback.format_exception(type(exception), exception, tb))
+        pprint("----\n")
         return None

@@ -22,7 +22,3 @@ class MessageView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
-
-
-# Create your views here.
-# request-handler : actions
