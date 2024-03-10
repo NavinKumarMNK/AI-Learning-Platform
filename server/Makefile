@@ -1,22 +1,22 @@
 DEV_ENV_NAME = ailp-dev
 PROD_ENV_NAME = ailp-prod
 
-.PHONY = dev prod run-dev run-prod stop-dev stop-prod clean logs restart images build-dev build-prod up-dev up-prod
+.PHONY = run run-prod stop stop-prod clean logs restart images build build-prod up up-prod
 
 
-build-dev:
+build:
 	docker-compose -p $(DEV_ENV_NAME) -f docker-compose.yaml build
 
 build-prod:
 	docker-compose -p $(PROD_ENV_NAME) -f docker-compose.prod.yaml build
 
-up-dev:
+up:
 	docker-compose -p $(DEV_ENV_NAME) -f docker-compose.yaml up
 
 up-prod:
 	docker-compose -p $(PROD_ENV_NAME) -f docker-compose.prod.yaml up
 
-run-dev:
+run:
 	make build-dev
 	make up-dev
 
@@ -25,14 +25,17 @@ run-prod:
 	make up-prod  
 
 
-stop-dev:
+stop:
 	docker-compose -p $(DEV_ENV_NAME) down
 
 stop-prod:
 	docker-compose -p $(PROD_ENV_NAME) down
 
 clean:
-	docker-compose down --volumes
+	docker-compose down --volumes 
+	docker-compose down --volumes --remove-orphans
+	docker-compose rm -f
+
 
 rmi:
 	docker-compose down --volumes --rmi all

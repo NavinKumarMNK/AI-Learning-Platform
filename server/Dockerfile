@@ -14,13 +14,16 @@ RUN pip install poetry
 # Turn off Poetry's virtualenv to ensure dependencies are installed in the system Python environment
 RUN poetry config virtualenvs.create false
 
-# Poetry install
-COPY . /app
-WORKDIR /app 
-# ENV PYTHONPATH=/
+# Copy only requirements to cache them in docker layer
+WORKDIR /app
+COPY pyproject.toml poetry.lock /app/
 
+# Poetry install
 ARG INSTALL_DEV=false
 RUN if [ "$INSTALL_DEV" = "true" ]; then poetry install; else poetry install --no-dev; fi
+
+# Copy all files
+COPY . /app
 
 EXPOSE 8000
 

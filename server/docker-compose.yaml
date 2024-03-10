@@ -1,21 +1,33 @@
 version: '3'
 services:
   postgres:
-    image: postgres
+    build: ./docker/postgres/
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   cassandra:
-    image: cassandra
+    build: ./docker/cassandra/
     ports:
       - "9042:9042"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
     environment:
       - CASSANDRA_CLUSTER_NAME=${CASSANDRA_CLUSTER_NAME}
       - CASSANDRA_ENDPOINT_SNITCH=${CASSANDRA_ENDPOINT_SNITCH}
+      - CASSANDRA_KEYSPACE=${CASSANDRA_KEYSPACE}
       - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
+  qdrant:
+    build: ./docker/qdrant/
+    volumes:
+      - qdrant_data:/qdrant/storage
+    ports:
+      - "6333:6333"
+      - "6334:6334"
   web:
     build: .
     volumes:
@@ -24,7 +36,7 @@ services:
       - "8000:8000"
     environment:
       - DJANGO_DEBUG=True
-      - POSTGRES_NAME=${POSTGRES_DB}
+      - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_HOST=${POSTGRES_HOST}
@@ -32,6 +44,14 @@ services:
       - CASSANDRA_KEYSPACE=${CASSANDRA_KEYSPACE}
       - CASSANDRA_USER=${CASSANDRA_USER}
       - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
+      - QDRANT_COLLECTION_NAME=${QDRANT_COLLECTION_NAME}
+      - QDRANT_HOST=${QDRANT_HOST}
     depends_on:
       - postgres
       - cassandra
+      - qdrant
+
+volumes:
+  postgres_data:
+  cassandra_data:
+  qdrant_data:

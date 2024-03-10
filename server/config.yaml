@@ -1,0 +1,5 @@
+qdrant:
+  collection: megacad
+  host: qdrant
+  vector_size: 768
+  distance: Cosine

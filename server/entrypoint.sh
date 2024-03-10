@@ -5,10 +5,10 @@ if [ -f .env ]; then
   . .env  # Source the .env file
 fi
 
-until </dev/tcp/$CASSANDRA_HOST/9042; do
-  echo "Cassandra port is not yet open - waiting"
-  sleep 3
+until </dev/tcp/$CASSANDRA_HOST/9042 > /dev/null 2>&1; do
+  sleep 5
 done
+
 
 # echo "Cassandra is up - executing command"
 

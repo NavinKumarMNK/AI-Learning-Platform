@@ -1,11 +1,14 @@
 import os
 from pathlib import Path
 
+from utils import utils
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEGACAD_DIR = os.path.join(BASE_DIR, "megacad")
 
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+CONFIG = utils.load_config(BASE_DIR / "config.yaml")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
@@ -15,7 +18,6 @@ ALLOWED_HOSTS = ["*"]
 INTERNAL_IPS = ["127.0.0.1"]
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -76,14 +78,14 @@ ASGI_APPLICATION = "main.asgi.app"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_NAME"),
+        "NAME": os.environ.get("POSTGRES_DB"),
         "USER": os.environ.get("POSTGRES_USER"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
         "HOST": os.environ.get("POSTGRES_HOST"),
     },
     "cassandra": {
         "ENGINE": "django_cassandra_engine",
-        "NAME": os.environ.get("CASSANDRA_NAME"),
+        "NAME": os.environ.get("CASSANDRA_KEYSPACE"),
         "HOST": os.environ.get("CASSANDRA_HOST"),
         "USER": os.environ.get("CASSANDRA_USER"),
         "PASSWORD": os.environ.get("CASSANDRA_PASSWORD"),
