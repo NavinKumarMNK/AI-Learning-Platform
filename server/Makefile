@@ -1,7 +1,7 @@
 DEV_ENV_NAME = ailp-dev
 PROD_ENV_NAME = ailp-prod
 
-.PHONY = run run-prod stop stop-prod clean logs restart images build build-prod up up-prod
+.PHONY = clean-pycache run run-prod stop stop-prod clean logs restart images build build-prod up up-prod
 
 
 build:
@@ -23,6 +23,9 @@ run:
 run-prod:
 	make build-prod
 	make up-prod  
+
+clean-pycache:
+	find . -type d -name __pycache__ -exec rm -rf {} +
 
 
 stop:

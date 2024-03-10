@@ -15,6 +15,6 @@ done
 # Run Django commands
 python3 manage.py makemigrations
 python3 manage.py migrate
+python3 manage.py sync_cassandra
 python3 manage.py collectstatic --no-input
-
 exec uvicorn server:app --host 0.0.0.0 --port 8000 --reload
