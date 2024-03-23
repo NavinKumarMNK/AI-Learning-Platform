@@ -1,43 +1,52 @@
-# Path: MLOps/PyTorch.DockerFile
-
-FROM nvcr.io/nvidia/pytorch:23.08-py3
+# -----------------------------------------------
+# Stage 1: Base Image with CUDA and cuDNN
+FROM ubuntu:22.04 AS nvidia-cuda
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    wget \
-    vim \
-    ca-certificates \
-    libjpeg-dev \
-    libpng-dev \
-    librdmacm1 \
-    libibverbs1 \
-    ibverbs-providers \
-    libgtk2.0-dev \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    net-tools \
-    htop \ 
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y wget g++ nano build-essential gcc bzip2 software-properties-common git
 
 
-COPY ./requirements.txt requirements.txt
+RUN mkdir -p ~/miniconda3 && \
+    wget https://repo.anaconda.com/miniconda/Miniconda3-py310_23.10.0-1-Linux-ppc64le.sh -O ~/miniconda3/miniconda.sh && \
+    bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3 && \
+    rm -rf ~/miniconda3/miniconda.sh 
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+ENV PATH=/root/miniconda3/bin:$PATH 
+ENV CUDA_VERSION=12.2.0 
+ENV CUDA_DOWNLOAD_URL=https://developer.download.nvidia.com/compute/cuda/${CUDA_VERSION}/local_installers/cuda_${CUDA_VERSION}_535.54.03_linux_ppc64le.run
+ENV CUDNN_VERSION=8.9.5
 
-WORKDIR /workspace
+RUN wget ${CUDA_DOWNLOAD_URL} -O cuda_installer.run && \
+    chmod +x cuda_installer.run && \
+    ./cuda_installer.run --silent --toolkit --no-opengl-libs && \
+    rm cuda_installer.run && \
+    bash -c "echo /usr/local/cuda/lib64 > /etc/ld.so.conf" && \
+    ldconfig 
 
-EXPOSE 22
-EXPOSE 8888
-EXPOSE 8080
-EXPOSE 5000
+ENV PATH=/usr/local/cuda/bin:$PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
-RUN chmod -R a+w /workspace
-RUN apt-get update && apt-get upgrade -y
+COPY cudnn.tar.xz /root/
+WORKDIR /root/
 
-CMD ["tail", "-f", "/dev/null"]
+RUN mkdir cudnn && \
+    tar -xvf cudnn.tar.xz -C cudnn --strip-components=1 && \
+    rm cudnn.tar.xz && \
+    cp cudnn/include/cudnn*.h /usr/local/cuda/include/ && \
+    cp cudnn/lib/libcudnn* /usr/local/cuda/lib64/ && \
+    rm -rf cudnn  
+
+ENV CMAKE_CUDA_ARCHITECTURES=70 
+
+ENV PATH /root/miniconda3/bin:$PATH
+RUN conda --version
+RUN conda install -y -c open-ce open-ce-builder && \
+    conda install -y -c conda-forge magma && \
+    conda install cmake ninja
+
+# -----------------------------------------------
+# Stage 2: Pytorch Build
+
+# From nvidia-cuda AS pytorch
+RUN git clone --branch v2.1.2 https://github.com/NavinKumarMNK/pytorch.git --recursive

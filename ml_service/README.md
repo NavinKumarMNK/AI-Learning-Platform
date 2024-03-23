@@ -28,11 +28,13 @@
 ## Setup
 
 For development
+- before building the image, get the cudnn.tar.xz and place in the main directory. this is done to avoid authentication while downloading the library 
+- rename the `*.tar.xz` -> `cudnn.tar.xz`. so the dockerfile could pick it up while building the image.
 ```bash
-docker build -t your_image_name -f dev.Dockerfile .
+docker build . -t your_image_name 
 ```
 
 Run the container
 ```bash
-docker run -it -p 22:22 -p 8080:8080 -v /path:/app image-name bash
+docker run -it --runtime=nvidia --gpus all  --privileged nvidia-cuda
 ```
