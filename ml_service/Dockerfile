@@ -48,5 +48,26 @@ RUN conda install -y -c open-ce open-ce-builder && \
 # -----------------------------------------------
 # Stage 2: Pytorch Build
 
-# From nvidia-cuda AS pytorch
-RUN git clone --branch v2.1.2 https://github.com/NavinKumarMNK/pytorch.git --recursive
+FROM nvidia-cuda AS pytorch
+
+RUN touch /tmp/cache_buster
+RUN git clone --branch ppc64le https://github.com/NavinKumarMNK/pytorch.git --recursive
+
+# ENV PYTORCH_VERSION 2.1.2
+ENV PYTORCH_BUILD_NUMBER 0
+ENV PYTORCH_BUILD_VERSION 2.1.2
+ENV PYTORCH_VERSION 2.1.2
+ENV TORCH_CUDA_ARCH_LIST="7.0"
+
+WORKDIR /root/pytorch
+RUN python setup.py develop
+
+RUN touch /tmp/cache_buster
+RUN git pull origin ppc64le
+RUN pip install -r requirements.txt
+RUN python setup.py install
+
+# -----------------------------------------------
+# Stage 3: Build VLLM, Ray, Triton
+FROM pytorch AS ml
+WORKDIR /root/
