@@ -16,3 +16,12 @@ class Chat(DjangoCassandraModel):
     def save(self, *args, **kwargs):
         self.updated_at = datetime.utcnow()
         super(Chat, self).save(*args, **kwargs)
+        return self
+    
+    def append_message(self, message):
+        """
+        Appends a new message to the chat and returns the entire message list.
+        """
+        self.messages+=message  # Update sender based on request
+        self.save()
+        return self.messages
