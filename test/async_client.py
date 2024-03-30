@@ -53,13 +53,20 @@ async def fetch_update_data(url, data):
             url, json=data
         ) as response:
             if response.status == 200:
-                # updated_data = await response.json()  # Read the response JSON data
-                # print("Resource updated successfully. Updated data:", updated_data)
                 async for word in response.content:
                     print(word.decode("utf-8").strip())
             else:
                 raise Exception(f"Request failed with status code: {response.status}")
 
+# async def fetch_update_data2(url, data):
+#     async with aiohttp.ClientSession() as session:
+#         res = session.patch(
+#             url, json=data
+#         )
+#         print("HI")
+#         print(await res)
+
+            
 
 async def main():
     # url = "http://localhost:8000/api/v1/chat/" # create
@@ -71,7 +78,7 @@ async def main():
 
     data = {
         "user_id": "550e8400-e29b-41d4-a716-446655440000",  # Example UUID
-        "messages": [{"role": "user", "content": "say dude what apple color"}],  # Example message data
+        "messages": [{"role": "user", "content": "hey evdf dsgvfds"}],  # Example message data
         "title": "Apple color dono"  # Example title
     }
 

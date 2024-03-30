@@ -8,11 +8,16 @@ from .models import Chat
 from .serializers import ChatSerializer
 from lib.ml_emb_service import get_embeddings
 
+from asgiref.sync import sync_to_async, async_to_sync
+from django.conf import settings
+logger = settings.LOGGER
 
-def qdrant(message_emb):
+
+
+async def qdrant(message_emb):
     return "Yo, Apples are red."
 
-def llm(prompt):
+async def llm(prompt):
     return "Red color bro"
 
 
@@ -46,57 +51,30 @@ class ChatUpdateAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
     queryset = Chat.objects.all()
     serializer_class = ChatSerializer
     lookup_field = "chat_id"
-
-    def patch(self, request, *args, **kwargs):
+    
+    @async_to_sync
+    async def patch(self, request, *args, **kwargs):
         chat = self.get_object()
         message = request.data.get("messages")
 
         if message:
-            message_emb = get_embeddings(message)
-            message_related_content = qdrant(message_emb)
+            # Retrieving related content from qdrant
+            message_emb = await get_embeddings(message)
+            message_related_content = await qdrant(message_emb)
 
             # Generating prompt and getting response from llm
             prompt = "Related Content: " + message_related_content + "\n" + "Question: " + message[0].get("content")
-            llm_response = llm(prompt)
-
+            llm_response = await llm(prompt)
 
             # Appending recevied message and llm message to database
             message+=[{"role": "AI", "content": llm_response}]
-            chat_messages = chat.append_message(message)
+            task = asyncio.create_task(chat.append_message(message))
 
             #sending response to user
-            return Response(data={"messages": chat_messages})
+            return Response(data={"messages": llm_response})
         
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
-        # return self.partial_update(request, *args, **kwargs)
-    
-    # async def patch(self, request, *args, **kwargs):
-    #     chat = self.get_object()
-    #     message = request.data.get("messages")
-
-    #     if message:
-    #         task = asyncio.create_task(get_embeddings(message))
-    #         message_emb = await task
-    #         task = asyncio.create_task(qdrant(message_emb))
-    #         message_related_content = await task
-
-    #         # Generating prompt and getting response from llm
-    #         prompt = "Related Content: " + message_related_content + "\n" + "Question: " + message[0].get("content")
-    #         task = asyncio.create_task(llm(prompt))
-    #         llm_response = await task
-
-
-    #         # Appending recevied message and llm message to database
-    #         message+=[{"role": "AI", "content": llm_response}]
-    #         task = asyncio.create_task(chat.append_message(message))
-    #         chat_messages = task
-
-    #         #sending response to user
-    #         return Response(data={"messages": chat_messages})
-        
-
-    #     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class ChatDeleteAPIView(mixins.DestroyModelMixin, generics.GenericAPIView):
