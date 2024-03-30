@@ -138,3 +138,7 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# Logger
+import logging
+LOGGER = logging.getLogger(__name__)
