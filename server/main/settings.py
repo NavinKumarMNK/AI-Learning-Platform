@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django_cassandra_engine",
     "megacad",
     "chat.api",
+    "user.api"
     "rest_framework",
     "corsheaders",
 ]
