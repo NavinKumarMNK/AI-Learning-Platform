@@ -1,4 +1,4 @@
-FROM qdrant/qdrant 
+FROM --platform=linux/amd64 qdrant/qdrant 
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install --no-install-recommends -y \

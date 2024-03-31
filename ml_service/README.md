@@ -36,5 +36,5 @@ docker build . -t <image_name>
 
 Run the container
 ```bash
-docker run -it --runtime=nvidia --gpus all  --privileged <image_name>
+docker run -it --runtime=nvidia --gpus all --ipc=host --privileged llm_serve
 ```

@@ -9,6 +9,12 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --upgrade pip
+
+# below two lines are required for ppc64le server
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH /root/.cargo/bin:$PATH
+
+
 RUN pip install poetry
 
 # Turn off Poetry's virtualenv to ensure dependencies are installed in the system Python environment
