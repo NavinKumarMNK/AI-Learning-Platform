@@ -4,19 +4,19 @@ http_options:
   host: 0.0.0.0
   port: 8000
 
-grpc_options:
-  port: 9000
-  grpc_servicer_functions: []
+# not supported in ray 2.6.3
+#grpc_options:
+#  port: 9000
+#  grpc_servicer_functions: []
 
 applications:
 - name: llm
   route_prefix: /llm
   import_path: llm_serve:main
-  ignore_reinit_error: true
   args:
     config_key: llm
   runtime_env:
-    working_dir: "https://github.com/NavinKumarMNK/AI-LMS/archive/refs/heads/main.zip"
+    working_dir: "https://github.com/NavinKumarMNK/AI-LearningPlatform/archive/refs/heads/main.zip"
     # excludes:
     #  - "./docs"
     #  - "./logs"
@@ -24,7 +24,7 @@ applications:
   deployments:
   - name: VLLMDeployment
     num_replicas: 1
-    max_concrrent_queries: 1
+    max_concurrent_queries: 1
     ray_actor_options:
       num_cpus: 12
       num_gpus: 1

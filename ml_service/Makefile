@@ -20,11 +20,29 @@ build-ray-vllm:
 
 # main docker image as llm service
 build: 
-	docker build . -t llm-serve
+	docker build . -t ml-service
 
-run-llm:
-	docker run -it --runtime=nvidia --gpus all -v /data/:/workspace --ipc=host --privileged llm_serve
+run:
+	docker run -it --runtime=nvidia --gpus all -v /data/:/workspace --ipc=host --privileged ml-service
 
 run-vllm-ray:
 	docker run -it --runtime=nvidia --gpus all -v /data/:/workspace  --ipc=host --privileged ray-vllm
+
+ray-up:
+	ray up -y config/ray-cluster.yaml --no-config-cache
+
+ray-down:
+	ray down -y config/ray-cluster.yaml
+
+ray-attach:
+	ray attach config/ray-cluster.yaml
+
+RAY_PYTHON_CODE ?= 'python -c "import ray; ray.init()"'  # Default Python code
+ray-exec:
+    ray exec config/ray-cluster.yaml $(RAY_PYTHON_CODE)
+
+ray-serve:
+	serve deploy config/ray-serve.yaml;
+
+
 
