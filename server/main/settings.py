@@ -27,8 +27,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_cassandra_engine",
     "megacad",
-    "chat.api",
-    "user.api"
+    "chat",
+    "user",
     "rest_framework",
     "corsheaders",
 ]

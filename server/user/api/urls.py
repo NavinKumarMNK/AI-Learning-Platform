@@ -1,38 +1,38 @@
 from django.urls import path
 
 from .views import (
-    ChatCreateAPIView,
-    ChatRetrieveAPIView,
-    ChatDeleteAPIView,
-    ChatListAPIView,
-    ChatUpdateAPIView,
+    UserCreateAPIView,
+    UserRetrieveAPIView,
+    UserDeleteAPIView,
+    UserListAPIView,
+    UserUpdateAPIView,
 )
 
-app_name = "chat"
+app_name = "user"
 
 urlpatterns = [
     path("",
-        ChatCreateAPIView.as_view(),
-        name="chat-create"
+        UserCreateAPIView.as_view(),
+        name="user-create"
     ),
     path(
-        "<uuid:chat_id>/",
-        ChatRetrieveAPIView.as_view(),
-        name="chat-retrieve",
+        "<uuid:user_id>",
+        UserRetrieveAPIView.as_view(),
+        name="user-retrieve",
     ),
     path(
-        "<uuid:chat_id>/update",
-        ChatUpdateAPIView.as_view(),
-        name="chat-update",
+        "<uuid:user_id>/update",
+        UserUpdateAPIView.as_view(),
+        name="user-update",
     ),
     path(
-        "<uuid:chat_id>/delete",
-        ChatDeleteAPIView.as_view(),
-        name="chat-delete",
+        "<uuid:user_id>/delete",
+        UserDeleteAPIView.as_view(),
+        name="user-delete",
     ),
     path(
-        "user/<uuid:user_id>/",
-        ChatListAPIView.as_view(),
-        name="chat-list-by-user-id",
+        "users",
+        UserListAPIView.as_view(),
+        name="user-list",
     ),
 ]

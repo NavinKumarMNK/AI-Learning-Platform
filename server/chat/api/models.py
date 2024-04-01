@@ -19,14 +19,17 @@ class Chat(DjangoCassandraModel):
     messages = columns.List(columns.Map(columns.Text, columns.Text), default=list)
     title = columns.Text(max_length=128)
 
-    async def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         self.updated_at = datetime.utcnow()
-        res = sync_to_async(super(Chat, self).save)(*args, **kwargs)
+        return super(Chat, self).save(*args, **kwargs)
+    
+    @sync_to_async
+    def async_save(self, *args, **kwargs):
+        return self.save(*args, **kwargs)
     
     async def append_message(self, message):
         """
         Appends a new message to the chat and returns the entire message list.
         """
-        self.messages+=message  # Update sender based on request
-        await self.save()
-        return self.messages
+        self.messages+=message
+        await self.async_save()
