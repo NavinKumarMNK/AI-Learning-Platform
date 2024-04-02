@@ -55,4 +55,4 @@ if __name__ == "__main__":
     reader = YamlParser(filename="config.yaml")
     DATA = reader.obj
 
-    print(DATA.app.model)
+    print(DATA.app)

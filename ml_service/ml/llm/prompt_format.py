@@ -135,11 +135,11 @@ class PromptFormat(BaseModel):
                     prompt.append(
                         self.user.format(
                             instruction=message_content,
-                            system=self.system.format(
-                                instruction=system_message.content
-                            )
-                            if system_message
-                            else "",
+                            system=(
+                                self.system.format(instruction=system_message.content)
+                                if system_message
+                                else ""
+                            ),
                         )
                     )
                     system_message = None

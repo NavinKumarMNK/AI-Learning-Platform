@@ -33,15 +33,30 @@ file_mounts: {
   "/app":"."  
 }
 
-file_mounts_sync_continuously: false
+rsync_exclude:
+  - "**/.git"
+  - "**/.git/**"
+  - "*.tar.*"
+
+rsync_filter:
+  - ".gitignore"
+  - "__pycache__"
+  - "=*"
+  - "*.pyc"
+  - "*.tar.*"
+  - ".git"
+
+
+file_mounts_sync_continuously: true
 
 setup_commands: []
 
 # This YAML file contains the configuration for starting and stopping Ray clusters.
 head_start_ray_commands:
   - ray stop
-  - ulimit -c unlimited && ray start --head --port=6379 --autoscaling-config=~/ray_bootstrap_config.yaml
+  - ulimit -c unlimited && ray start --head --port=6379 --autoscaling-config=~/ray_bootstrap_config.yaml --dashboard-host=0.0.0.0  --object-manager-port=8076
+
 # The commands to start Ray workers in the cluster.
 worker_start_ray_commands:
   - ray stop
-  - ray start --address=$RAY_HEAD_IP:6379
+  - export RAY_HEAD_IP && echo "export RAY_HEAD_IP=$RAY_HEAD_IP" >> ~/.bashrc && ray start --address=$RAY_HEAD_IP:6379   --object-manager-port=8076

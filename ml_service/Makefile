@@ -29,7 +29,7 @@ run-vllm-ray:
 	docker run -it --runtime=nvidia --gpus all -v /data/:/workspace  --ipc=host --privileged ray-vllm
 
 ray-up:
-	ray up -y config/ray-cluster.yaml --no-config-cache
+	ray up -y config/ray-cluster.yaml --no-config-cache -v
 
 ray-down:
 	ray down -y config/ray-cluster.yaml
@@ -37,12 +37,25 @@ ray-down:
 ray-attach:
 	ray attach config/ray-cluster.yaml
 
-RAY_PYTHON_CODE ?= 'python -c "import ray; ray.init()"'  # Default Python code
+RAY_BASH_CODE ?= 'python -c "import ray; ray.init()"'  # Default Python code
 ray-exec:
-    ray exec config/ray-cluster.yaml $(RAY_PYTHON_CODE)
+	ray exec config/ray-cluster.yaml $(RAY_BASH_CODE)
 
-ray-serve:
-	serve deploy config/ray-serve.yaml;
+ray-serve-deploy:
+	serve deploy config/ray-serve.yaml -v
 
+ray-serve-run:
+	serve run config/ray-serve.yaml
 
+ray-serve-status:
+	serve status
 
+ray-log:
+	ray logs config/ray-cluster.yaml
+
+ray-rsync-up:
+	ray exec config/ray-cluster.yaml "find . -type d -name '__pycache__*' -exec rm -rf {} +"
+	ray rsync-up config/ray-cluster.yaml -v
+
+ray-rsync-down:
+	ray rsync-downs config/ray-cluster.yaml

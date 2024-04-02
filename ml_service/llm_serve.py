@@ -1,31 +1,28 @@
 import asyncio
-import logging
 import os
 import uuid
 from http import HTTPStatus
-from typing import AsyncGenerator, Dict, List, Optional, Tuple
+from typing import AsyncGenerator, Dict, List
 
 # from langchain_community.llms import VLLM
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
+from ml.llm.model_config import load_model_config
+from ml.llm.protocol import GenerateRequest, GenerateResponse
 from ray import serve
 from ray.serve import Application
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response, StreamingResponse
-from vllm.engine.arg_utils import AsyncEngineArgs
-from vllm.engine.async_llm_engine import AsyncLLMEngine
-from vllm.sampling_params import SamplingParams
-
-from ml.llm.engine import VLLMConfig, get_vllm_engine_config
-from ml.llm.model_config import load_model_config
-from ml.llm.protocol import GenerateRequest, GenerateResponse
 
 # from vllm import LLM
-from utils import load_env
-from utils.exception import ConfigFileMissingError, MaximumContextLengthError
+from utils.base import load_env
+from utils.exception import MaximumContextLengthError, ConfigFileMissingError
 from utils.http import create_error_response
 from utils.loggers import Logger, load_loggers
 from utils.parsers import DictObjectParser, YamlParser
+from vllm.engine.arg_utils import AsyncEngineArgs
+from vllm.engine.async_llm_engine import AsyncLLMEngine
+from vllm.sampling_params import SamplingParams
 
 # FastAPI APP
 APP = FastAPI()
@@ -38,11 +35,11 @@ async def validation_exception_handler(
     return create_error_response(HTTPStatus.BAD_REQUEST, str(exc))
 
 
-# VLLM Server Deployment
+# LLM Server Deployment
 @serve.deployment()
 @serve.ingress(APP)
-class VLLMDeployment:
-    """VLLM Generate Deployment Class for Ray Serve."""
+class LLMDeployment:
+    """LLM Generate Deployment Class"""
 
     def __init__(self, config: DictObjectParser, logger: Logger) -> None:
         """Construct
@@ -51,13 +48,16 @@ class VLLMDeployment:
         ----------
         config : DictObjectParser
             contains config for the deployment of llm
+        logger : Logger
+            object which will be used for logging
+
         """
         self.logger = logger
         self.config = config
-        self.logger.debug("VLLM Deployment Initialized")
+        self.logger.info("LLM Deployment Initialized")
 
         async_engine_args = AsyncEngineArgs(**config.serve_config.to_dict())
-        self.logger.debug(async_engine_args)
+        self.logger.info(async_engine_args)
 
         # Engine Args
         self.engine = AsyncLLMEngine.from_engine_args(async_engine_args)
@@ -66,7 +66,7 @@ class VLLMDeployment:
         self.max_model_len: float = self.config.serve_config.max_model_len
         print(self.tokenizer)
 
-        self.logger.debug(f"VLLM Engine Config: {self.engine_model_config}")
+        self.logger.info(f"VLLM Engine Config: {self.engine_model_config}")
         # print(f"VLLM Engine Config: {self.engine_model_config}")
 
         try:
@@ -215,27 +215,27 @@ class VLLMDeployment:
 def main(args: Dict[str, str]) -> Application:
     # load env
     load_env()
+    LLM_PATH = os.getcwd()
     MAIN_CONFIG_FILE_PATH = os.getenv("MAIN_CONFIG_FILE_PATH")
-    MAIN_CONFIG_FILE_PATH = "./config.yaml"
-    # if MAIN_CONFIG_FILE_PATH is None:
-    #    raise ConfigFileMissingError(
-    #        "MAIN_CONFIG_FILE_PATH environemental variable is missing."
-    #    )
+    if MAIN_CONFIG_FILE_PATH is None:
+        raise ConfigFileMissingError(
+            "MAIN_CONFIG_FILE_PATH environmental variable is missing."
+        )
 
     # load main config file
-    yaml_parser = YamlParser(filepath=MAIN_CONFIG_FILE_PATH)
+    yaml_parser = YamlParser(filepath=os.path.join(LLM_PATH, MAIN_CONFIG_FILE_PATH))
     CONFIG: DictObjectParser = yaml_parser.get_data()
 
     print(CONFIG, "CONFIG")
+
     # load loggers
     if CONFIG.loggers.log:
         logger: Logger = load_loggers(CONFIG.loggers, name=__name__)
 
     config_key: str = args.get("config_key")
-    return VLLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
+    return LLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
 
-'''
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = main({"config_key": "llm"})
     serve.run(app)
-'''
