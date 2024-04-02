@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from .models import User
 from .serializers import UserSerializer
+from megacad.api.mixins import StaffEditorPermissionMixin
 
 # from asgiref.sync import sync_to_async, async_to_sync
 # from django.conf import settings
@@ -14,7 +15,10 @@ from .serializers import UserSerializer
 
 
 
-class UserCreateAPIView(mixins.CreateModelMixin, generics.GenericAPIView):
+class UserCreateAPIView(
+    StaffEditorPermissionMixin,
+    mixins.CreateModelMixin,
+    generics.GenericAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -31,7 +35,10 @@ class UserCreateAPIView(mixins.CreateModelMixin, generics.GenericAPIView):
         serializer.save()
 
 
-class UserRetrieveAPIView(mixins.RetrieveModelMixin, generics.GenericAPIView):
+class UserRetrieveAPIView(
+    StaffEditorPermissionMixin,
+    mixins.RetrieveModelMixin,
+    generics.GenericAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = "user_id"
@@ -40,7 +47,10 @@ class UserRetrieveAPIView(mixins.RetrieveModelMixin, generics.GenericAPIView):
         return self.retrieve(request, *args, **kwargs)
 
 
-class UserUpdateAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
+class UserUpdateAPIView(
+    StaffEditorPermissionMixin,
+    mixins.UpdateModelMixin,
+    generics.GenericAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = "user_id"
@@ -49,7 +59,10 @@ class UserUpdateAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
         return self.partial_update(request, *args, **kwargs)
 
 
-class UserDeleteAPIView(mixins.DestroyModelMixin, generics.GenericAPIView):
+class UserDeleteAPIView(
+    StaffEditorPermissionMixin,
+    mixins.DestroyModelMixin,
+    generics.GenericAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = "user_id"
@@ -58,7 +71,10 @@ class UserDeleteAPIView(mixins.DestroyModelMixin, generics.GenericAPIView):
         return self.destroy(request, *args, **kwargs)
 
 
-class UserListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
+class UserListAPIView(
+    StaffEditorPermissionMixin,
+    mixins.ListModelMixin,
+    generics.GenericAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 

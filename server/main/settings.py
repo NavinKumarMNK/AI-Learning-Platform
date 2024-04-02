@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import datetime
 
 from utils import utils
 
@@ -26,32 +27,43 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_cassandra_engine",
+
     "megacad",
     "chat",
     "user",
+
     "rest_framework",
+    "rest_framework.authtoken",
+    "rest_framework_simplejwt",
     "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "lib.meglib.middleware.errors.Log500ErrorsMiddleware",
 ]
 
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly"
+    ],
 }
 
+# CORS_URLS_REGEX = r"^api/.*"
 CORS_ORIGIN_ALLOW_ALL = True
-
 # CORS_ALLOWED_ORIGINS = ["http://localhost:1234"]
 
 ROOT_URLCONF = "main.urls"
@@ -143,3 +155,8 @@ STORAGES = {
 # Logger
 import logging
 LOGGER = logging.getLogger(__name__)
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
+}
