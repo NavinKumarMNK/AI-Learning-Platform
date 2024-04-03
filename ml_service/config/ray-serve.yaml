@@ -40,7 +40,7 @@ applications:
 #      num_gpus: 1
 
 - name: embedding
-  route_prefix: /embed
+  route_prefix: /api/v1/embedder
   import_path: emb_serve:main
   args:
     config_key: emb

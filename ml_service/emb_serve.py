@@ -43,8 +43,7 @@ class EMBDeployment:
             object which will be used for logging
         """
         self.logger = logger
-        print("inside class")
-        self.logger.error("EMB Deployment Initialized")
+        self.logger.info("EMB Deployment Initialized")
         self.model = TextEmbedding(**config.serve_config.to_dict())
 
     @APP.get("/health")
@@ -53,10 +52,16 @@ class EMBDeployment:
         return Response(status_code=200)
 
     @APP.post("/embed")
-    async def generate_embedding(self, request: Request, raw_request):
-        print(request)
+    async def generate_embedding(self, request: Request) -> JSONResponse:
         self.logger.info(request)
         req_type = request.query_params.get("type")
+
+        if req_type not in ["PASSAGE_EMBED", "QUERY_EMBED", "PLAIN_EMBED"]:
+            detail = "Invalid embedding type. Valid types are: PASSAGE_EMBED, QUERY_EMBED, PLAIN_EMBED"
+            raise RequestValidationError(
+                [{"loc": ("query", "type"), "msg": detail, "type": "value_error"}]
+            )
+
         if req_type == "PASSAGE_EMBED":
             embedding: List[np.ndarray] = list(
                 self.model.passage_embed(request.query_params.get("data"))
@@ -69,7 +74,10 @@ class EMBDeployment:
             embedding = list(self.model.embed(query=request.query_params.get("data")))[
                 0
             ]
-        self.logger.info(embedding)
+
+        embedding = [x.tolist() for x in embedding]
+
+        self.logger.info(len(embedding))
         return JSONResponse(content={"embedding": embedding})
 
 
@@ -88,12 +96,11 @@ def main(args: Dict[str, str]) -> Application:
     CONFIG: DictObjectParser = yaml_parser.get_data()
 
     # load loggers
-    logger: Logger = load_loggers(CONFIG.loggers, name=__name__)
+    logger: Logger = load_loggers(CONFIG.loggers, name="ray.serve")
     config_key: str = args.get("config_key")
-
     return EMBDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
 
 
 if __name__ == "__main__":
-    app = main({"config_key": "llm"})
+    app = main({"config_key": "emb"})
     serve.run(app)

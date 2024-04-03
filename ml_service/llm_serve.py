@@ -216,22 +216,18 @@ def main(args: Dict[str, str]) -> Application:
     # load env
     load_env()
     LLM_PATH = os.getcwd()
-    MAIN_CONFIG_FILE_PATH = os.getenv("MAIN_CONFIG_FILE_PATH")
-    if MAIN_CONFIG_FILE_PATH is None:
+    CONFIG_FILE = os.path.join(LLM_PATH, "config.yaml")
+    if os.path.exists(CONFIG_FILE) is None:
         raise ConfigFileMissingError(
             "MAIN_CONFIG_FILE_PATH environmental variable is missing."
         )
 
     # load main config file
-    yaml_parser = YamlParser(filepath=os.path.join(LLM_PATH, MAIN_CONFIG_FILE_PATH))
+    yaml_parser = YamlParser(filepath=CONFIG_FILE)
     CONFIG: DictObjectParser = yaml_parser.get_data()
 
-    print(CONFIG, "CONFIG")
-
     # load loggers
-    if CONFIG.loggers.log:
-        logger: Logger = load_loggers(CONFIG.loggers, name=__name__)
-
+    logger: Logger = load_loggers(CONFIG.loggers, name=__name__)
     config_key: str = args.get("config_key")
     return LLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
 

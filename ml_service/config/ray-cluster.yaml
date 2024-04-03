@@ -13,6 +13,7 @@ docker:
     - --ipc=host
     - --privileged
     - -v "/data":"/data"
+    - -p 8000:8000
 
 # The 'provider' section specifies the type of provider and the IP addresses of the head node and worker nodes.
 provider:

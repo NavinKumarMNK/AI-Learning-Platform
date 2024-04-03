@@ -17,12 +17,12 @@ llm:
 
 emb:
   serve_config:
-    model: /data/bge-large-en-v1.5
+    model_name: BAAI/bge-large-en-v1.5
 
-loggers:
-  console:
-    rich: false
+loggers:  
   file:
-    filename: ./logs/logs.log
-    mode: w
-
+    dir: /app/logs/
+  console:
+    rich: true
+  
+    

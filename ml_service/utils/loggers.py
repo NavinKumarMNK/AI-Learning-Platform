@@ -1,6 +1,8 @@
 import logging
-from abc import ABC
+import os
+import datetime
 
+from abc import ABC
 from utils.parsers import DictObjectParser
 
 try:
@@ -61,14 +63,20 @@ class ConsoleLogger(Logger):
         self.handler.setLevel(logging.NOTSET)
         self.logger.addHandler(self.handler)
 
+        self.handler.setFormatter(
+            logging.Formatter(
+                "[%(asctime)s T%(thread).5s P%(process)s %(levelname)7s %(name)s:%(lineno)s] %(message)s"
+            )
+        )
+
 
 class FileLogger(Logger):
     """File logger for logging to file"""
 
     def __init__(self, name: str, filename: str, mode="w"):
         super().__init__(name)
-        self.handler = logging.FileHandler(filename, mode=mode)
-        self.handler.setLevel(logging.NOTSET)
+        self.handler = logging.FileHandler(filename, mode="w")
+        self.handler.setLevel(logging.INFO)
 
         self.handler.setFormatter(
             logging.Formatter(
@@ -83,15 +91,19 @@ def load_loggers(config: DictObjectParser, name: str = __name__):
     if config.console:
         ConsoleLogger(name=name, rich=config.console.rich)
     if config.file:
+        os.makedirs(config.file.dir, exist_ok=True)
+        filename = os.path.join(
+            config.file.dir,
+            f"megacad_log_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
+        )
         FileLogger(
             name=name,
-            filename=config.file.filename,
-            mode=config.file.mode,
+            filename=filename,
         )
 
-    logger = logging.getLogger(
-        name,
-    )
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+
     return logger
 
 
