@@ -94,7 +94,7 @@ def load_loggers(config: DictObjectParser, name: str = __name__):
         os.makedirs(config.file.dir, exist_ok=True)
         filename = os.path.join(
             config.file.dir,
-            f"megacad_log_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
+            f"megacad_log_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log",
         )
         FileLogger(
             name=name,

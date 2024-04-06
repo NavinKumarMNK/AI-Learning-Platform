@@ -4,7 +4,6 @@ import uuid
 from http import HTTPStatus
 from typing import AsyncGenerator, Dict, List
 
-# from langchain_community.llms import VLLM
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from ml.llm.model_config import load_model_config
@@ -54,20 +53,15 @@ class LLMDeployment:
         """
         self.logger = logger
         self.config = config
-        self.logger.info("LLM Deployment Initialized")
-
         async_engine_args = AsyncEngineArgs(**config.serve_config.to_dict())
-        self.logger.info(async_engine_args)
 
         # Engine Args
         self.engine = AsyncLLMEngine.from_engine_args(async_engine_args)
         self.engine_model_config = self.engine.engine.get_model_config()
         self.tokenizer = self.engine.engine.tokenizer
         self.max_model_len: float = self.config.serve_config.max_model_len
-        print(self.tokenizer)
 
         self.logger.info(f"VLLM Engine Config: {self.engine_model_config}")
-        # print(f"VLLM Engine Config: {self.engine_model_config}")
 
         try:
             self.model_config = load_model_config(self.engine_model_config.model)
@@ -77,7 +71,7 @@ class LLMDeployment:
             )
             self.model_config = None
 
-        print(self.model_config, "Deployment Inititalized")
+        self.logger.info(self.model_config, "Deployment Inititalized")
 
     def _next_request_id(self) -> str:
         # produce unique id using host ID, sequence number and time
@@ -227,7 +221,7 @@ def main(args: Dict[str, str]) -> Application:
     CONFIG: DictObjectParser = yaml_parser.get_data()
 
     # load loggers
-    logger: Logger = load_loggers(CONFIG.loggers, name=__name__)
+    logger: Logger = load_loggers(CONFIG.loggers, name="ray.serve")
     config_key: str = args.get("config_key")
     return LLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
 

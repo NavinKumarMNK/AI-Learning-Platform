@@ -4,15 +4,15 @@ cluster_name: vit-ray
 
 # Run ray in containers
 docker: 
-  image: "ml-service"
-  container_name: "ml-service"
+  image: "ml-service-old"
+  container_name: "ml-service-old"
   pull_before_run: false
   run_options:
     - --runtime=nvidia
     - --gpus all
     - --ipc=host
     - --privileged
-    - -v "/data":"/data"
+    - -v "/data/navin-kumar-m":"/data"
     - -p 8000:8000
 
 # The 'provider' section specifies the type of provider and the IP addresses of the head node and worker nodes.
@@ -30,25 +30,25 @@ max_workers: 0  # Maximum number of workers in the cluster
 upscaling_speed: 1.0  # Speed at which the cluster scales up
 idle_timeout_minutes: 3  # Timeout in minutes for idle workers to be terminated
 
-file_mounts: {
-  "/app":"."  
-}
+#file_mounts: {
+#  "/app":"."  
+#}
 
-rsync_exclude:
-  - "**/.git"
-  - "**/.git/**"
-  - "*.tar.*"
+#rsync_exclude:
+#  - "**/.git"
+#  - "**/.git/**"
+#  - "*.tar.*"
 
-rsync_filter:
-  - ".gitignore"
-  - "__pycache__"
-  - "=*"
-  - "*.pyc"
-  - "*.tar.*"
-  - ".git"
+#rsync_filter:
+#  - ".gitignore"
+#  - "__pycache__"
+#  - "=*"
+#  - "*.pyc"
+#  - "*.tar.*"
+#  - ".git"
 
 
-file_mounts_sync_continuously: true
+#file_mounts_sync_continuously: true
 
 setup_commands: []
 

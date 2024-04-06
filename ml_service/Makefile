@@ -13,10 +13,10 @@ build-pytorch:
 	docker build -f ./docker/pytorch.Dockerfile -t pytorch .
 
 build-triton:
-	DOCKER_BUILDKIT=0 docker build -f ./docker/triton.Dockerfile -t pytorch-triton .
+	docker build -f ./docker/triton.Dockerfile -t pytorch-triton .
 
 build-ray-vllm:
-	DOCKER_BUILDKIT=0 docker build -f ./docker/vllm.Dockerfile -t ray-vllm .
+	docker build -f ./docker/vllm.Dockerfile -t ray-vllm .
 
 # main docker image as llm service
 build: 
@@ -54,7 +54,6 @@ ray-log:
 	ray logs config/ray-cluster.yaml
 
 ray-rsync-up:
-	ray exec config/ray-cluster.yaml "find . -type d -name '__pycache__*' -exec rm -rf {} +"
 	ray rsync-up config/ray-cluster.yaml -v
 
 ray-rsync-down:

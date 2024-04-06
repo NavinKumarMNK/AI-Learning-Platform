@@ -9,9 +9,9 @@ llm:
     dtype: float16  # data type {auto, float32, float16, bfloat16}
     max_model_len: 2048  # max length of model
     worker_use_ray: false  # use ray for worker
+    engine_use_ray: false  # use ray for engine
     pipeline_parallel_size: 1  # size of pipeline parallel
-    tensor_parallel_size: 1  # size of tensor parallel
-    engine_use_ray: true  # use ray for engine
+    tensor_parallel_size: 4  # size of tensor parallel
     # gpu_memory_utilization: 0.95  # gpu memory utilization
     enforce_eager: true
 

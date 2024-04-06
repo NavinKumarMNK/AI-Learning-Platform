@@ -11,22 +11,22 @@ http_options:
 #   grpc_servicer_functions: []
 
 applications:
-#- name: llm
-#  route_prefix: /llm
-#  import_path: llm_serve:main
-#  args:
-#    config_key: llm
-#  runtime_env:
-#    working_dir: "https://github.com/NavinKumarMNK/AI-Learning-Platform/releases/download/v0.0.1/ml_service.zip"
-#
-#
-#  deployments:
-#  - name: LLMDeployment
-#    num_replicas: 1
-#    max_concurrent_queries: 1
-#    ray_actor_options:
-#      num_cpus: 32
-#      num_gpus: 4
+- name: llm
+  route_prefix: /api/v1/llm
+  import_path: llm_serve:main
+  args:
+    config_key: llm
+  #runtime_env:
+  #  working_dir: "https://github.com/NavinKumarMNK/AI-Learning-Platform/releases/download/v0.0.1/ml_service.zip"
+
+
+  deployments:
+  - name: LLMDeployment
+    # num_replicas: 1
+    #max_concurrent_queries: 1
+    #ray_actor_options:
+    #  num_cpus: 32
+    #  num_gpus: 4
     
 # - name: stt
 #  route_prefix: /stt
@@ -39,15 +39,15 @@ applications:
 #    ray_actor_options:
 #      num_gpus: 1
 
-- name: embedding
-  route_prefix: /api/v1/embedder
-  import_path: emb_serve:main
-  args:
-    config_key: emb
-
-  deployments:
-  - name: EMBDeployment
-    num_replicas: 1
-    max_concurrent_queries: 8
-    ray_actor_options:
-      num_cpus: 64
+#- name: embedding
+#  route_prefix: /api/v1/embedder
+#  import_path: emb_serve:main
+#  args:
+#    config_key: emb
+#
+#  deployments:
+#  - name: EMBDeployment
+#    num_replicas: 1
+#    max_concurrent_queries: 8
+#    ray_actor_options:
+#      num_cpus: 64
