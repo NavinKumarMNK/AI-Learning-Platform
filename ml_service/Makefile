@@ -13,20 +13,20 @@ build-pytorch:
 	docker build -f ./docker/pytorch.Dockerfile -t pytorch .
 
 build-triton:
-	docker build -f ./docker/triton.Dockerfile -t pytorch-triton .
+	DOCKER_BUILDKIT=0 docker build -f ./docker/triton.Dockerfile -t pytorch-triton .
 
 build-ray-vllm:
-	docker build -f ./docker/vllm.Dockerfile -t ray-vllm .
+	DOCKER_BUILDKIT=0 docker build -f ./docker/vllm.Dockerfile -t ray-vllm .
 
 # main docker image as llm service
 build: 
 	docker build . -t ml-service
 
 run:
-	docker run -it --runtime=nvidia --gpus all -v /data/:/workspace --ipc=host --privileged ml-service
+	docker run -it --runtime=nvidia --gpus all -v /data/navin-kumar-m:/data --ipc=host --privileged ml-service
 
 run-vllm-ray:
-	docker run -it --runtime=nvidia --gpus all -v /data/:/workspace  --ipc=host --privileged ray-vllm
+	docker run -it --runtime=nvidia --gpus all -v /data/navin-kumar-m:/data --ipc=host --privileged ray-vllm
 
 ray-up:
 	ray up -y config/ray-cluster.yaml --no-config-cache -v
