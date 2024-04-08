@@ -23,13 +23,13 @@ build:
 	docker build . -t ml-service
 
 run:
-	docker run -it --runtime=nvidia --gpus all -v /data/:/workspace --ipc=host --privileged ml-service
+	docker run -it --runtime=nvidia --gpus all -v /data/navin-kumar-m:/data --ipc=host --privileged ml-service
 
 run-vllm-ray:
-	docker run -it --runtime=nvidia --gpus all -v /data/:/workspace  --ipc=host --privileged ray-vllm
+	docker run -it --runtime=nvidia --gpus all -v /data/navin-kumar-m:/data --ipc=host --privileged ray-vllm
 
 ray-up:
-	ray up -y config/ray-cluster.yaml --no-config-cache
+	ray up -y config/ray-cluster.yaml --no-config-cache -v
 
 ray-down:
 	ray down -y config/ray-cluster.yaml
@@ -37,12 +37,45 @@ ray-down:
 ray-attach:
 	ray attach config/ray-cluster.yaml
 
-RAY_PYTHON_CODE ?= 'python -c "import ray; ray.init()"'  # Default Python code
+RAY_BASH_CODE ?= 'python -c "import ray; ray.init()"'  # Default Python code
 ray-exec:
-    ray exec config/ray-cluster.yaml $(RAY_PYTHON_CODE)
+	ray exec config/ray-cluster.yaml $(RAY_BASH_CODE)
 
-ray-serve:
-	serve deploy config/ray-serve.yaml;
+ray-serve-deploy:
+	serve deploy config/ray-serve.yaml -v
+
+ray-serve-run:
+	serve run config/ray-serve.yaml
+
+ray-serve-status:
+	serve status
+
+ray-log:
+	ray logs config/ray-cluster.yaml
+
+ray-rsync-up:
+	ray rsync-up config/ray-cluster.yaml -v
+
+ray-rsync-down:
+	ray rsync-downs config/ray-cluster.yaml
+
+ray-up-dev:
+	ray up -y config/ray-cluster.dev.yaml --no-config-cache -v
+
+ray-down-dev:
+	ray down -y config/ray-cluster.dev.yaml
+
+ray-attach-dev:
+	ray attach config/ray-cluster.dev.yaml
 
 
+ray-dev-ssh-keygen:
+	if [ -z "$(IP)" ]; then echo "IP is not set"; exit 1; fi
+	if [ -z "$(PORT)" ]; then echo "PORT is not set"; exit 1; fi
+	ssh-keygen -f "/root/.ssh/known_hosts" -R "[$(IP)]:$(PORT)"
 
+ray-dev-ssh:
+	if [ -z "$(IP)" ]; then echo "IP is not set"; exit 1; fi
+	if [ -z "$(PORT)" ]; then echo "PORT is not set"; exit 1; fi
+
+	ssh -p $(PORT) root@$(IP)

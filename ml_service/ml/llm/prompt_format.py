@@ -13,7 +13,7 @@ from typing import (
 )
 
 import yaml
-from pydantic import BaseModel, model_validator, validator
+from pydantic import BaseModel, validator
 
 T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=BaseModel)
@@ -73,14 +73,6 @@ class PromptFormat(BaseModel):
         ), "user must be a string containing '{instruction}'"
         return value
 
-    @model_validator(mode="after")
-    def check_user_system_in_user(cls, values):
-        if values["system_in_user"]:
-            assert (
-                "{system}" in values["user"]
-            ), "If system_in_user=True, user must contain '{system}'"
-        return values
-
     def generate_prompt(self, messages: Union[Prompt, List[Message]]) -> str:
         if isinstance(messages, Prompt):
             if isinstance(messages.prompt, str):
@@ -135,11 +127,11 @@ class PromptFormat(BaseModel):
                     prompt.append(
                         self.user.format(
                             instruction=message_content,
-                            system=self.system.format(
-                                instruction=system_message.content
-                            )
-                            if system_message
-                            else "",
+                            system=(
+                                self.system.format(instruction=system_message.content)
+                                if system_message
+                                else ""
+                            ),
                         )
                     )
                     system_message = None

@@ -1,28 +1,28 @@
 app:
-  model: 
-    llm: microsoft/phi-2 # HuggingFaceH4/zephyr-7b-beta 
-    stt: Systran/faster-distil-whisper-small.en # distil-whisper/distil-small.en
-    emb: BAAI/bge-base-en-v1.5
+  name: vit-ray
 
 llm:
   serve_config:
-    model: microsoft/phi-2  # name / path
+    model: /data/c4ai-35b  # name / path
     download_dir: null # path to model
-    load_format: auto  # format of model {auto, pt, dummy, safetensors}
-    dtype: auto  # data type {auto, float32, float16, bfloat16}
-    max_model_len: 2048  # max length of model
-    worker_use_ray: false  # use ray for worker
+    load_format: safetensors  # format of model {auto, pt, dummy, safetensors}
+    dtype: float16  # data type {auto, float32, float16, bfloat16}
+    max_model_len: 8192 # max length of model
+    worker_use_ray: false # use ray for worker
+    engine_use_ray: false # use ray for engine
     pipeline_parallel_size: 1  # size of pipeline parallel
-    tensor_parallel_size: 1  # size of tensor parallel
-    engine_use_ray: true  # use ray for engine
+    tensor_parallel_size: 4  # size of tensor parallel
     # gpu_memory_utilization: 0.95  # gpu memory utilization
     enforce_eager: true
+    disable_custom_all_reduce: True
 
-loggers:
-  log: false
-  console:
-    rich: false
+emb:
+  serve_config:
+    model_name: BAAI/bge-large-en-v1.5
+
+loggers:  
   file:
-    filename: ./logs/logs.log
-    mode: w
-
+    dir: /app/logs/
+  console:
+    rich: true  
+    

@@ -10,10 +10,13 @@ ENV PYTORCH_BUILD_NUMBER 0
 ENV PYTORCH_BUILD_VERSION 2.1.2
 ENV PYTORCH_VERSION 2.1.2
 ENV TORCH_CUDA_ARCH_LIST="7.0"
+ENV TORCH_NVCC_FLAGS="-Xfatbin -compress-all"
+ENV NCCL_ROOT_DIR=/usr/local/cuda
+ENV USE_STATIC_CUDNN=1
+ENV USE_STATIC_NCCL=1
 
 WORKDIR /root/pytorch
 RUN python setup.py develop
-
 
 RUN git pull origin ppc64le
 RUN pip install -r requirements.txt
