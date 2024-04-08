@@ -14,7 +14,8 @@ llm:
     tensor_parallel_size: 4  # size of tensor parallel
     # gpu_memory_utilization: 0.95  # gpu memory utilization
     enforce_eager: true
-    
+    disable_custom_all_reduce: True
+
 emb:
   serve_config:
     model_name: BAAI/bge-large-en-v1.5

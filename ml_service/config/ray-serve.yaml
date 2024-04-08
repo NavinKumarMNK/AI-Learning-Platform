@@ -10,11 +10,12 @@ http_options:
 #   port: 9000
 #   grpc_servicer_functions: []
 
-logging_config:
-  encoding: UTF-8
-  log_level: INFO
-  logs_dir: /app/logs
-  enable_access_log: true
+# not supported in ray 2.6.3
+# logging_config:
+#   encoding: UTF-8
+#   log_level: INFO
+#   logs_dir: /app/logs
+#   enable_access_log: true
 
 applications:
 - name: llm
@@ -30,7 +31,7 @@ applications:
   - name: LLMDeployment
     num_replicas: 1
     user_config:
-      sample: x
+      sample: 123
     max_concurrent_queries: 32
     #ray_actor_options:
     #  num_cpus: 32
@@ -47,15 +48,14 @@ applications:
 #    ray_actor_options:
 #      num_gpus: 1
 
-#- name: embedding
-#  route_prefix: /api/v1/embedder
-#  import_path: emb_serve:main
-#  args:
-#    config_key: emb
-
-#  deployments:
-#  - name: EMBDeployment
-#    num_replicas: 1
-#    max_concurrent_queries: 8
-#    ray_actor_options:
-#      num_cpus: 64
+- name: embedding
+  route_prefix: /api/v1/embedder
+  import_path: emb_serve:main
+  args:
+    config_key: emb
+  deployments:
+  - name: EMBDeployment
+    num_replicas: 1
+    max_concurrent_queries: 8
+    ray_actor_options:
+      num_cpus: 64

@@ -22,6 +22,7 @@ from utils.parsers import DictObjectParser, YamlParser
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams
+from typing import Any
 
 # FastAPI APP
 APP = FastAPI()
@@ -79,7 +80,7 @@ class LLMDeployment:
         pass
 
     def _next_request_id(self) -> str:
-        # produce unique id using host ID, sequence number and time
+        """produce unique id using host ID, sequence number and time"""
         return str(uuid.uuid1().hex)
 
     def _convert_prompt_to_tokens(
@@ -112,17 +113,14 @@ class LLMDeployment:
         """Stream the results of the output generator"""
         num_returned = 0
         async for request_output in output_generator:
-            output = request_output.output[0]
+            output = request_output.outputs[0]
             text_output = output.text[num_returned:]
-            print(text_output, "text_output")
             response = GenerateResponse(
                 output=text_output,
                 prompt_tokens=len(request_output.prompt_token_ids),
                 output_tokens=1,
                 finish_reason=output.finish_reason,
             )
-            await asyncio.sleep(1)
-            print(response)
             yield (response.json() + "\n").encode("utf-8")
             num_returned += len(text_output)
 
@@ -163,9 +161,8 @@ class LLMDeployment:
             prompt_token_ids = self._convert_prompt_to_tokens(
                 prompt=prompt, request=request
             )
-            request_dict = request.model_dump(
-                exclude=set(["prompt", "messages", "stream"])
-            )
+            request_dict = {k: v for k, v in request.__dict__.items() if k not in ["prompt", "messages", "stream"]}
+
             sampling_params = SamplingParams(**request_dict)
             request_id = self._next_request_id()
 
@@ -226,7 +223,7 @@ def main(args: Dict[str, str]) -> Application:
     CONFIG: DictObjectParser = yaml_parser.get_data()
 
     # load loggers
-    logger: Logger = load_loggers(CONFIG.loggers, name="ray.serve")
+    logger: Logger = load_loggers(CONFIG.loggers, name='ray.serve')
     config_key: str = args.get("config_key")
     return LLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
 

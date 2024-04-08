@@ -10,7 +10,6 @@ import httpx
 
 logger = logging.getLogger()
 
-
 async def generate_text(endpoint_url: str, payload: Dict) -> List[str]:
     result = []
     headers = {"Content-Type": "application/json"}
@@ -27,13 +26,12 @@ async def generate_text(endpoint_url: str, payload: Dict) -> List[str]:
             ) as response:
                 if response.status_code == 200:
                     async for line in response.aiter_lines():
-                        print("hello")
+                        # Parse the line from a JSON string to a dictionary
+                        line_dict = json.loads(line)
                         # Process each line here
-                        sys.stdout.write(line)
+                        sys.stdout.write(line_dict['output'])
                         sys.stdout.flush()
-
                 else:
-                    print("hasdf")
                     logger.error(f"HTTP status code: {response.status_code}")
                     logger.error(response.text)
                     response.raise_for_status()
@@ -62,14 +60,14 @@ def main(
 ):
     logging.basicConfig(level=logging.INFO)
 
-    url = f"http://{host}:{port}/llm/generate"
+    url = f"http://{host}:{port}/api/v1/llm/generate"
     user_message = input("User(q) : ")
 
     payload = {
         "messages": [
             {"role": "user", "content": user_message},
         ],
-        "prompt": "Hey Hello and welcome",
+        "prompt": user_message,
         "stream": stream,
         "max_tokens": max_tokens,
         "temperature": temperature,
@@ -77,9 +75,10 @@ def main(
 
     if stream:
         asyncio.run(generate_text(url, payload))
+        print("\n")
     else:
         result = asyncio.run(generate_text(url, payload))
-        print(result)
+        print(json.loads(result)['output'])
 
 
 if __name__ == "__main__":
