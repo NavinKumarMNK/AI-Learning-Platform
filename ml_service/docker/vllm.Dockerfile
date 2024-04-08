@@ -4,7 +4,7 @@
 FROM pytorch-triton AS ray-vllm
 
 WORKDIR /root/
-RUN git clone https://github.com/NavinKumarMNK/vllm.git
+RUN git clone https://github.com/NavinKumarMNK/vllm.git 
 RUN conda install -y -c conda-forge llvmlite=0.42.0
 
 WORKDIR /root/vllm

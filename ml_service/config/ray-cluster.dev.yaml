@@ -5,7 +5,7 @@ cluster_name: vit-ray
 # Run ray in containers
 docker: 
   image: "ml-service"
-  container_name: "ml-service"
+  container_name: "ml-service-dev"
   pull_before_run: false
   run_options:
     # - --runtime=nvidia
@@ -14,6 +14,7 @@ docker:
     - --privileged
     - -v "/data/navin-kumar-m":"/data"
     - --shm-size=128g
+    - -v "/root/navin-kumar/AI-Learning-Platform/ml_service":"/app"
 
 # The 'provider' section specifies the type of provider and the IP addresses of the head node and worker nodes.
 provider:
@@ -30,24 +31,34 @@ max_workers: 0  # Maximum number of workers in the cluster
 upscaling_speed: 1.0  # Speed at which the cluster scales up
 idle_timeout_minutes: 3  # Timeout in minutes for idle workers to be terminated
 
-file_mounts: {
-  "/app":"."  
-}
+#file_mounts: {
+#  "/app":"."  
+#}
 
-rsync_exclude:
-  - "**/.git"
-  - "**/.git/**"
-  - "*.tar.*"
+#rsync_exclude:
+#  - "**/.git"
+#  - "**/.git/**"
+#  - "*.tar.*"
 
-rsync_filter:
-  - ".gitignore"
-  - "__pycache__"
-  - "=*"
-  - "*.pyc"
-  - "*.tar.*"
-  - ".git"
+#rsync_filter:
+#  - ".gitignore"
+#  - "__pycache__"
+#  - "=*"
+#  - "*.pyc"
+#  - "*.tar.*"
+#  - ".git"
 
-file_mounts_sync_continuously: true
+#file_mounts_sync_continuously: true
+
+head_setup_commands:
+  - apt-get install -y openssh-server
+  - mkdir /var/run/sshd
+  - echo 'root:qwertyui' | chpasswd
+  - sed -i 's/#*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - echo "Port 9999" >> /etc/ssh/sshd_config
+  - echo "ClientAliveInterval 30" >> /etc/ssh/sshd_config
+  - echo "ClientAliveCountMax 99999" >> /etc/ssh/sshd_config
+  - /usr/sbin/sshd
 
 # This YAML file contains the configuration for starting and stopping Ray clusters.
 head_start_ray_commands:

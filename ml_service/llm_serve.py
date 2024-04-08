@@ -49,12 +49,13 @@ class LLMDeployment:
             contains config for the deployment of llm
         logger : Logger
             object which will be used for logging
-
         """
+        
         self.logger = logger
         self.config = config
         async_engine_args = AsyncEngineArgs(**config.serve_config.to_dict())
-
+        self.logger.info(f"new config: {async_engine_args}")
+    
         # Engine Args
         self.engine = AsyncLLMEngine.from_engine_args(async_engine_args)
         self.engine_model_config = self.engine.engine.get_model_config()
@@ -71,7 +72,11 @@ class LLMDeployment:
             )
             self.model_config = None
 
-        self.logger.info(self.model_config, "Deployment Inititalized")
+        self.logger.info(f"{self.model_config}, Deployment Inititalized")
+
+    def reconfigure(self, config: Dict[str, Any]):
+        """on-the-fly change in the config"""        
+        pass
 
     def _next_request_id(self) -> str:
         # produce unique id using host ID, sequence number and time

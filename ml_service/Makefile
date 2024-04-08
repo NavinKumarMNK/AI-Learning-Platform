@@ -58,3 +58,24 @@ ray-rsync-up:
 
 ray-rsync-down:
 	ray rsync-downs config/ray-cluster.yaml
+
+ray-up-dev:
+	ray up -y config/ray-cluster.dev.yaml --no-config-cache -v
+
+ray-down-dev:
+	ray down -y config/ray-cluster.dev.yaml
+
+ray-attach-dev:
+	ray attach config/ray-cluster.dev.yaml
+
+
+ray-dev-ssh-keygen:
+	if [ -z "$(IP)" ]; then echo "IP is not set"; exit 1; fi
+	if [ -z "$(PORT)" ]; then echo "PORT is not set"; exit 1; fi
+	ssh-keygen -f "/root/.ssh/known_hosts" -R "[$(IP)]:$(PORT)"
+
+ray-dev-ssh:
+	if [ -z "$(IP)" ]; then echo "IP is not set"; exit 1; fi
+	if [ -z "$(PORT)" ]; then echo "PORT is not set"; exit 1; fi
+
+	ssh -p $(PORT) root@$(IP)
