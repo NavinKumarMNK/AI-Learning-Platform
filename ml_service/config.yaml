@@ -2,10 +2,12 @@ app:
   name: vit-ray
 
 llm:
+  model_name: Nous-Capybara-34B
+  time_consecutive_res: 0.5
   serve_config:
-    model: /data/c4ai-35b  # name / path
+    model: /data/nous-34b  # path
     download_dir: null # path to model
-    load_format: safetensors  # format of model {auto, pt, dummy, safetensors}
+    load_format: auto #safetensors  # format of model {auto, pt, dummy, safetensors}
     dtype: float16  # data type {auto, float32, float16, bfloat16}
     max_model_len: 8192 # max length of model
     worker_use_ray: false # use ray for worker
@@ -15,6 +17,7 @@ llm:
     # gpu_memory_utilization: 0.95  # gpu memory utilization
     enforce_eager: true
     disable_custom_all_reduce: True
+    trust_remote_code: true
 
 emb:
   serve_config:

@@ -6,15 +6,14 @@ from typing import AsyncGenerator, Dict, List
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
-from ml.llm.model_config import load_model_config
 from ml.llm.protocol import GenerateRequest, GenerateResponse
 from ray import serve
 from ray.serve import Application
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response, StreamingResponse
 
-# from vllm import LLM
-from utils.base import load_env
+import time
+from utils.base import load_env, load_model_config
 from utils.exception import MaximumContextLengthError, ConfigFileMissingError
 from utils.http import create_error_response
 from utils.loggers import Logger, load_loggers
@@ -52,28 +51,33 @@ class LLMDeployment:
             object which will be used for logging
         """
         
+        load_env(config.env_file if hasattr(config, 'env_file') else ())
         self.logger = logger
         self.config = config
-        async_engine_args = AsyncEngineArgs(**config.serve_config.to_dict())
-        self.logger.info(f"new config: {async_engine_args}")
-    
+        async_engine_args = AsyncEngineArgs(**self.config.serve_config.to_dict())
+        
         # Engine Args
         self.engine = AsyncLLMEngine.from_engine_args(async_engine_args)
         self.engine_model_config = self.engine.engine.get_model_config()
         self.tokenizer = self.engine.engine.tokenizer
         self.max_model_len: float = self.config.serve_config.max_model_len
 
-        self.logger.info(f"VLLM Engine Config: {self.engine_model_config}")
-
+        self.logger.info(f"Deployment Inititalized")
+        self.logger.info(f"LLM Deployment Config: {async_engine_args}")
+        
+        self.config.root_path = os.environ.get('ROOT_PATH', None)
         try:
-            self.model_config = load_model_config(self.engine_model_config.model)
+            self.model_config = load_model_config(
+                os.path.join(self.config.root_path, "config", "model", (self.config.model_name).lower()) + '.yaml'
+                ) 
+            self.logger.info(f"Model Config: {self.model_config}")
+        
         except FileNotFoundError:
             self.logger.warning(
-                f"No Model Config for: {self.config.serve_config.model}"
+                f"No Model Config for: {self.config.model_name}"
             )
             self.model_config = None
 
-        self.logger.info(f"{self.model_config}, Deployment Inititalized")
 
     def reconfigure(self, config: Dict[str, Any]):
         """on-the-fly change in the config"""        
@@ -110,20 +114,46 @@ class LLMDeployment:
         return True
 
     async def _stream_results(self, output_generator) -> AsyncGenerator[bytes, None]:
-        """Stream the results of the output generator"""
+        """Stream the results of the output generator every second"""
+        last_streamed_time = time.time()
         num_returned = 0
+        output_token_count = 0
+
         async for request_output in output_generator:
+            self.logger.info(f"{request_output = }")
             output = request_output.outputs[0]
+            output_token_count += 1
+            # Check if one second has passed since last stream
+            now = time.time()
+            if now - last_streamed_time >= self.config.time_consecutive_res:
+                # Generate response outside the loop for efficiency
+                text_output = output.text[num_returned:]
+                response = GenerateResponse(
+                    output=text_output,
+                    prompt_tokens=len(request_output.prompt_token_ids),
+                    output_tokens=output_token_count,
+                    finish_reason=output.finish_reason,
+                )
+
+                yield (response.json() + "\n").encode("utf-8")
+                last_streamed_time = now  
+                num_returned += len(text_output)
+                output_token_count = 0
+        
+        # Stream any remaining output at the end
+        if output_token_count:
             text_output = output.text[num_returned:]
+            self.logger.info(f"text returned {text_output}")
             response = GenerateResponse(
                 output=text_output,
                 prompt_tokens=len(request_output.prompt_token_ids),
-                output_tokens=1,
+                output_tokens=output_token_count,
                 finish_reason=output.finish_reason,
             )
-            yield (response.json() + "\n").encode("utf-8")
-            num_returned += len(text_output)
 
+            self.logger.info(response.json())
+            yield (response.json() + "\n").encode("utf-8")
+            
     async def _abort_request(self, request_id) -> None:
         await self.engine.abort(request_id=request_id)
 
@@ -138,7 +168,8 @@ class LLMDeployment:
     ) -> GenerateResponse:
         """Generate Completion for the requested prompt"""
         try:
-            # either prompt or messages is provided
+            # either prompt or messages should provided
+            self.logger.info(f"{request}")
             if not request.prompt and not request.messages:
                 return create_error_response(
                     status_code=400,
@@ -150,7 +181,7 @@ class LLMDeployment:
                 prompt = request.prompt
             elif self.model_config:
                 prompt = self.model_config.prompt_format.generate_prompt(
-                    request.message
+                    request.messages
                 )
             else:
                 return create_error_response(
@@ -166,11 +197,13 @@ class LLMDeployment:
             sampling_params = SamplingParams(**request_dict)
             request_id = self._next_request_id()
 
+            self.logger.info(f"Prompt Made from user: {prompt}")
             output_generator = self.engine.generate(
                 prompt=prompt,
                 sampling_params=sampling_params,
                 request_id=request_id,
                 prompt_token_ids=prompt_token_ids,
+
             )
 
             # Handle streaming, if the socket connection drops then abort the request processing
@@ -211,8 +244,8 @@ class LLMDeployment:
 def main(args: Dict[str, str]) -> Application:
     # load env
     load_env()
-    LLM_PATH = os.getcwd()
-    CONFIG_FILE = os.path.join(LLM_PATH, "config.yaml")
+    ROOT_PATH = os.environ.get("ROOT_PATH", None)
+    CONFIG_FILE = os.path.join(ROOT_PATH, "config.yaml")
     if os.path.exists(CONFIG_FILE) is None:
         raise ConfigFileMissingError(
             "MAIN_CONFIG_FILE_PATH environmental variable is missing."
