@@ -120,7 +120,6 @@ class LLMDeployment:
         output_token_count = 0
 
         async for request_output in output_generator:
-            self.logger.info(f"{request_output = }")
             output = request_output.outputs[0]
             output_token_count += 1
             # Check if one second has passed since last stream
@@ -143,7 +142,6 @@ class LLMDeployment:
         # Stream any remaining output at the end
         if output_token_count:
             text_output = output.text[num_returned:]
-            self.logger.info(f"text returned {text_output}")
             response = GenerateResponse(
                 output=text_output,
                 prompt_tokens=len(request_output.prompt_token_ids),
@@ -151,7 +149,6 @@ class LLMDeployment:
                 finish_reason=output.finish_reason,
             )
 
-            self.logger.info(response.json())
             yield (response.json() + "\n").encode("utf-8")
             
     async def _abort_request(self, request_id) -> None:
@@ -169,7 +166,6 @@ class LLMDeployment:
         """Generate Completion for the requested prompt"""
         try:
             # either prompt or messages should provided
-            self.logger.info(f"{request}")
             if not request.prompt and not request.messages:
                 return create_error_response(
                     status_code=400,
@@ -197,7 +193,6 @@ class LLMDeployment:
             sampling_params = SamplingParams(**request_dict)
             request_id = self._next_request_id()
 
-            self.logger.info(f"Prompt Made from user: {prompt}")
             output_generator = self.engine.generate(
                 prompt=prompt,
                 sampling_params=sampling_params,

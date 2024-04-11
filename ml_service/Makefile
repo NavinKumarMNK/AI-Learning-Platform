@@ -76,3 +76,6 @@ ray-dev-ssh:
 
 rm-pycache:
 	find . -type d -name __pycache__ -exec rm -r {} +
+
+llm_chat:
+	python3 ./test/llm_client_http.py

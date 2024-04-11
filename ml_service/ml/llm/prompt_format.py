@@ -49,6 +49,7 @@ class PromptFormat(BaseModel):
     strip_whitespace: bool = True
     trailing_assistant: str
     accept_sys_from_req: bool = False
+    recursive_sys_prompt: bool = True
 
     @validator("assistant")
     def check_assistant(cls, value):
@@ -96,8 +97,6 @@ class PromptFormat(BaseModel):
         
         messages.insert(0, Message(role='system', content=self.system))
 
-        print(messages)
-
         if all(message.role == "system" for message in messages):
             raise ValueError("Only System messages are not allowed")
         
@@ -117,8 +116,6 @@ class PromptFormat(BaseModel):
                     instruction=messages[1].content
                 )
             )
-            
-        print(prompt, messages)
 
         for message in messages[2:]:
             message_content = message.content
@@ -135,7 +132,6 @@ class PromptFormat(BaseModel):
                 prompt.append(self.assistant.format(instruction=message_content))
         
         prompt.append(self.trailing_assistant)
-        print(prompt)
         return "".join(prompt)
 
 

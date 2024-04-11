@@ -6,8 +6,12 @@ from typing import Dict, List
 import traceback
 import click
 import httpx
-
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import FileHistory
 from rich.console import Console
+from rich.text import Text
+from rich.panel import Panel
+
 
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.WARNING)
@@ -72,23 +76,35 @@ def main(
     logging.basicConfig(level=logging.INFO)
 
     console = Console()
-    url = f"http://{host}:{port}/api/v1/llm/generate"
-    print("""Hi, This is MegAcad, your AI Educational Tutor
-You can type the prompts (or) messages.
-Please be polite. Remember AI can make mistake.""")
 
+    url = f"http://{host}:{port}/api/v1/llm/generate"
+    welcome_message = Text("""Hello, this is MegAcad, your AI Educational Tutor 
+You can type the prompts or messages 
+Please be polite towards me & Remember, I can make mistakes too """)
+    welcome_message = Panel(welcome_message, title="MegAcad AI")  # Use 'solid' style
+
+    console.print(welcome_message)
     messages = []
+
+    session = PromptSession(history=FileHistory(".history"))
+
     i = 0
-    # console.begin_capture()
     while i <= 30:
         try:
-            user_message = console.input(">>> ")
+            user_message = session.prompt(">>> ")
             if user_message == "\\q":
                 print("Session Exited")
                 break
-            if user_message == "\\n":
-                print("New Session")
+            elif user_message == "\\n":
                 messages = []
+                console.clear()
+                console.print("New Session")
+                console.print(welcome_message)
+                continue
+            elif user_message.strip() == "":
+                continue
+            elif user_message == "\\c":
+                console.clear()
                 continue
 
             if is_prompt:
@@ -123,6 +139,8 @@ Please be polite. Remember AI can make mistake.""")
             traceback.print_exc()
 
         i += 1
+    # console.end_capture()
+
 
 if __name__ == "__main__":
     main()
