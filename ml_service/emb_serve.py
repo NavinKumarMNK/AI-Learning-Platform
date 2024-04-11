@@ -84,8 +84,8 @@ class EMBDeployment:
 def main(args: Dict[str, str]) -> Application:
     # load env
     load_env()
-    EMB_PATH = os.getcwd()
-    CONFIG_FILE = os.path.join(EMB_PATH, "config.yaml")
+    ROOT_PATH = os.environ.get("ROOT_PATH", None)
+    CONFIG_FILE = os.path.join(ROOT_PATH, "config.yaml")
     if os.path.exists(CONFIG_FILE) is None:
         raise ConfigFileMissingError(
             "MAIN_CONFIG_FILE_PATH environmental variable is missing."

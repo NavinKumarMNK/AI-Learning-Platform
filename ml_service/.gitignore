@@ -7,3 +7,5 @@ __pycache__
 cudnn.tar.xz
 *.tar.gz
 core.*
+.env
+.history

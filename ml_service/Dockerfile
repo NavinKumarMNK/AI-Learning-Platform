@@ -10,4 +10,6 @@ RUN conda install -y rocketce::onnxruntime
 # COPY . /app
 ENV RAY_DEDUP_LOGS=1
 
+RUN printenv | awk -F= '{print "export " $1 "=\"" $2 "\""}' >> ~/.bashrc
+
 WORKDIR /app/
