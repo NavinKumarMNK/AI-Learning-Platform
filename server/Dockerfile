@@ -1,4 +1,4 @@
-FROM python:3.8.18-slim-bullseye
+FROM python:3.10.13-slim-bullseye
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONBUFFERED 1
 
@@ -7,13 +7,24 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     gcc \
     libpq-dev \
     curl \
+    wget \
+    build-essential \
+    pkg-config \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools
 
 # below two lines are required for ppc64le server
-#RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-#ENV PATH /root/.cargo/bin:$PATH
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH /root/.cargo/bin:$PATH
 
+# env to build the cryptography msgpack package
+ENV PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/local/lib/pkgconfig
+ENV OPENSSL_DIR=/root/miniconda3/ssl
+ENV POWERPC64LE_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib/powerpc64le-linux-gnu
+ENV OPENSSL_LIB_DIR=/usr/lib/powerpc64le-linux-gnu
+ENV POWERPC64LE_UNKNOWN_LINUX_GNU_OPENSSL_INCLUDE_DIR=/usr/include/openssl
+ENV OPENSSL_INCLUDE_DIR=/usr/include/openssl
 
 RUN pip install poetry
 
@@ -22,17 +33,23 @@ RUN poetry config virtualenvs.create false
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
-COPY pyproject.toml poetry.lock /app/
+COPY README.md pyproject.toml poetry.lock /app/
 
 # Poetry install
 ARG INSTALL_DEV=false
-RUN if [ "$INSTALL_DEV" = "true" ]; then poetry install; else poetry install --no-dev; fi
+RUN poetry update
+RUN if [ "$INSTALL_DEV" = "true" ]; then poetry install; else poetry install --only main; fi
 
-# Copy all files
+# pip install
+# RUN pip install .
+
+# Make server
 COPY . /app
-
 EXPOSE 8000
-
 ENV DJANGO_DEBUG=false
+
+RUN rustup self uninstall -y
+RUN rm -rf ~/.cargo
+RUN rm -rf ~/.rustup
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]

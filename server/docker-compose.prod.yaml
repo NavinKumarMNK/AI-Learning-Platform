@@ -2,6 +2,7 @@ version: '3'
 services:
   postgres:
     build: ./docker/postgres/
+    network_mode: bridge
     ports:
       - "5432:5432"
     volumes:
@@ -12,6 +13,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   cassandra:
     build: ./docker/cassandra/
+    network_mode: bridge
     ports:
       - "9042:9042"
     volumes:
@@ -23,6 +25,7 @@ services:
       - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
   qdrant:
     build: ./docker/qdrant/
+    network_mode: bridge
     volumes:
       - qdrant_data:/qdrant/storage
     ports:
@@ -30,6 +33,7 @@ services:
       - "6334:6334"
   web:
     build: .
+    network_mode: bridge
     volumes:
       - .:/app
     ports:
@@ -53,5 +57,20 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /data/ailp-server/postgres_data
   cassandra_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /data/ailp-server/cassandra_data
   qdrant_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /data/ailp-server/qdrant_data

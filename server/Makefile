@@ -17,8 +17,8 @@ up-prod:
 	docker-compose -p $(PROD_ENV_NAME) -f docker-compose.prod.yaml up
 
 run:
-	make build-dev
-	make up-dev
+	make build
+	make up
 
 run-prod:
 	make build-prod
