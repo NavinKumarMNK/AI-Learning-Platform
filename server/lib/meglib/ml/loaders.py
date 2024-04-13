@@ -1,4 +1,3 @@
-import os
 import re
 from bs4 import BeautifulSoup
 from langchain_community.document_loaders import PDFMinerPDFasHTMLLoader
