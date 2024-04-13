@@ -5,6 +5,7 @@ from langchain_community.document_loaders import PDFMinerPDFasHTMLLoader
 from langchain.docstore.document import Document
 from PyPDF2 import PdfReader, PdfWriter
 from typing import Dict, List
+from meglib.ml.errors import PDFError
 
 
 class PDFLoader:
@@ -176,7 +177,7 @@ class PDFLoader:
                 path, path + "extra", meta_data["start_page"], meta_data["end_page"]
             )
         except IndexError:
-            raise Exception("Page Number not exists in the PDF Document")
+            raise PDFError("Page Number not exists in the PDF Document")
 
         self.loader = PDFMinerPDFasHTMLLoader(path + "extra")
         data = self.loader.load()[0]

@@ -40,8 +40,10 @@ ARG INSTALL_DEV=false
 RUN poetry update
 RUN if [ "$INSTALL_DEV" = "true" ]; then poetry install; else poetry install --only main; fi
 
-# pip install
-# RUN pip install .
+# install library
+COPY ./lib /app/lib
+WORKDIR /app/lib
+RUN pip install .
 
 # Make server
 COPY . /app
@@ -51,5 +53,6 @@ ENV DJANGO_DEBUG=false
 RUN rustup self uninstall -y
 RUN rm -rf ~/.cargo
 RUN rm -rf ~/.rustup
+RUN rm -rf /app/lib
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]
