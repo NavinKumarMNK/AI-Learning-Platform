@@ -2,7 +2,9 @@ version: '3'
 services:
   postgres:
     build: ./docker/postgres/
-    network_mode: bridge
+    networks: 
+      - server-net
+
     ports:
       - "5432:5432"
     volumes:
@@ -13,7 +15,9 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   cassandra:
     build: ./docker/cassandra/
-    network_mode: bridge
+    networks: 
+      - server-net
+
     ports:
       - "9042:9042"
     volumes:
@@ -25,7 +29,9 @@ services:
       - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
   qdrant:
     build: ./docker/qdrant/
-    network_mode: bridge
+    networks: 
+     - server-net
+
     volumes:
       - qdrant_data:/qdrant/storage
     ports:
@@ -33,7 +39,8 @@ services:
       - "6334:6334"
   web:
     build: .
-    network_mode: bridge
+    networks:
+     - server-net
     volumes:
       - .:/app
     ports:
@@ -74,3 +81,11 @@ volumes:
       o: bind
       type: none
       device: /data/ailp-server/qdrant_data
+
+networks:
+  server-net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16

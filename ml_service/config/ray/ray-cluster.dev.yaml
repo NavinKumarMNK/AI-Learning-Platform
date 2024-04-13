@@ -15,6 +15,7 @@ docker:
     - -v "/data/navin-kumar-m":"/data"
     - --shm-size=128g
     - -v "/root/navin-kumar/AI-Learning-Platform/ml_service":"/app"
+    - --pid=host
 
 # The 'provider' section specifies the type of provider and the IP addresses of the head node and worker nodes.
 provider:
