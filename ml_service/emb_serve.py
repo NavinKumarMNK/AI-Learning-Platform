@@ -71,7 +71,6 @@ class EMBDeployment:
         elif req_type == "PLAIN_EMBED":
             embedding: List[np.ndarray] = list(self.model.embed(data.get("data")))
 
-        print(embedding)
         embedding = [x.tolist() for x in embedding]
 
         return JSONResponse(content={"embedding": embedding})

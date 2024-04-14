@@ -38,7 +38,9 @@ services:
       - "6333:6333"
       - "6334:6334"
   web:
-    build: .
+    build: 
+      context: .
+      dockerfile: prod.Dockerfile
     networks:
      - server-net
     volumes:
