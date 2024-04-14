@@ -3,7 +3,7 @@ proxy_location: EveryNode
 
 http_options:
   host: 0.0.0.0
-  port: 5000
+  port: 9999
 
 # not supported in ray 2.6.3
 # grpc_options:

@@ -2,10 +2,10 @@ app:
   name: vit-ray
 
 llm:
-  model_name: C4AI-35B # supported = [Nous-Capybara-34B, Qwen-32B, Mistral-7B, C4AI-35B]  
+  model_name: Nous-Capybara-34B # supported = [Nous-Capybara-34B, Qwen-32B, Mistral-7B, C4AI-35B]  
   time_consecutive_res: 0.5
   serve_config:
-    model: /data/c4ai-35b # supported - [/data/nous-34b, /data/qwen-32b, /data/mistral-7b, /data/c4ai-35b]
+    model: /data/nous-34b # supported - [/data/nous-34b, /data/qwen-32b, /data/mistral-7b, /data/c4ai-35b]
     download_dir: null # download model dir 
     load_format: auto #safetensors  # format of model {auto, pt, dummy, safetensors}
     dtype: float16  # data type {auto, float32, float16, bfloat16}
