@@ -1,2 +1,2 @@
-*.html binary
-*.ipynb binary
+*.ipynb linguist-detectable=false
+*.html linguist-detectable=false

@@ -14,6 +14,7 @@ docker:
     - --privileged
     - -v "/data/navin-kumar-m":"/data"
     - --shm-size=128g
+    - --pid=host
 
 # The 'provider' section specifies the type of provider and the IP addresses of the head node and worker nodes.
 provider:

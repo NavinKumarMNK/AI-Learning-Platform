@@ -1,5 +1,27 @@
-qdrant:
-  collection: megacad
-  host: qdrant
-  vector_size: 768
-  distance: Cosine
+store:
+  name: qdrant
+  main:
+    collection: megacad
+    host: qdrant
+    vector_size: 768
+    distance: Cosine
+
+  config:
+    url: "localhost"
+    port: "6333"
+    prefer_grpc: True
+    timeout: 5
+
+  create_collection:
+    name: "example_collection"
+    dim: 1024
+    distance: "cosine"
+    timeout: 5
+    hnsw_config:
+      m: 10
+      ef_construct: 10
+    quantization_config:
+      quantile: 0.99
+    
+  index_payload: course
+  

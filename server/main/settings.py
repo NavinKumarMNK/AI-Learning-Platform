@@ -42,7 +42,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "lib.meglib.middleware.errors.Log500ErrorsMiddleware",
+    "meglib.middleware.errors.Log500ErrorsMiddleware",
 ]
 
 REST_FRAMEWORK = {
@@ -141,4 +141,5 @@ STORAGES = {
 
 # Logger
 import logging
+
 LOGGER = logging.getLogger(__name__)

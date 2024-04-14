@@ -53,8 +53,8 @@ class EMBDeployment:
 
     @APP.post("/embed")
     async def generate_embedding(self, request: Request) -> JSONResponse:
-        self.logger.info(request)
-        req_type = request.query_params.get("type")
+        data = await request.json()
+        req_type = data.get("type")
 
         if req_type not in ["PASSAGE_EMBED", "QUERY_EMBED", "PLAIN_EMBED"]:
             detail = "Invalid embedding type. Valid types are: PASSAGE_EMBED, QUERY_EMBED, PLAIN_EMBED"
@@ -64,20 +64,16 @@ class EMBDeployment:
 
         if req_type == "PASSAGE_EMBED":
             embedding: List[np.ndarray] = list(
-                self.model.passage_embed(request.query_params.get("data"))
+                self.model.passage_embed(data.get("data"))
             )
         elif req_type == "QUERY_EMBED":
-            embedding = list(
-                self.model.query_embed(query=request.query_params.get("data"))
-            )[0]
+            embedding: List[np.ndarray] = list(self.model.query_embed(data.get("data")))
         elif req_type == "PLAIN_EMBED":
-            embedding = list(self.model.embed(query=request.query_params.get("data")))[
-                0
-            ]
+            embedding: List[np.ndarray] = list(self.model.embed(data.get("data")))
 
+        print(embedding)
         embedding = [x.tolist() for x in embedding]
 
-        self.logger.info(len(embedding))
         return JSONResponse(content={"embedding": embedding})
 
 

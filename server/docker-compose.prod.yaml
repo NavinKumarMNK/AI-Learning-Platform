@@ -44,7 +44,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "9999:8000"
     environment:
       - DJANGO_DEBUG=True
       - POSTGRES_DB=${POSTGRES_DB}
