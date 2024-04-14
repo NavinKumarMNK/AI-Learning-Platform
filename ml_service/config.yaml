@@ -17,7 +17,7 @@ llm:
     # gpu_memory_utilization: 0.9  # gpu memory utilization
     enforce_eager: true
     disable_custom_all_reduce: True
-    # trust_remote_code: true # for cohere models comment it
+    trust_remote_code: true # for cohere models comment it
 
 emb:
   serve_config:

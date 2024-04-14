@@ -20,13 +20,14 @@ jobs:
 
       - name: Install dependencies and build
         run: |
-          cd ~/app
+          cd ${{ github.workspace }}/app
           npm install
           npm run build
 
+
       - name: Compress Folder
         run: |
-          cd ~/app/dist
+          cd ${{ github.workspace }}/app/dist
           zip -r app.zip .
 
       - name: Create Release
