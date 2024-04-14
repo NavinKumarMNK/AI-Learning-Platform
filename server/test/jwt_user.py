@@ -237,9 +237,6 @@ if __name__ == "__main__":
 
     user_id = "108e30b1-d6ba-4dbf-8441-316ef3e71cc9"
 
-    # simple instance method to perform an HTTP
-    # request to our /api/products/ endpoint
-
     # lookup_1_data = client.create(data=data, limit=5)
     # lookup_1_data = client.get(user_id=user_id, limit=5)
     lookup_1_data = client.list(limit=5)

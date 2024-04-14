@@ -23,6 +23,7 @@ urlpatterns = [
     path("chat/", include("chat.urls")),
     path("api/v1/chat/", include("chat.api.urls")),
     path("api/v1/user/", include("user.api.urls")),
+    path("api/v1/course/", include("course.urls")),
     path("api/v1/", include("megacad.api.urls")),
     path("", include("megacad.urls")),
 ]

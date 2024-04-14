@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "megacad",
     "chat",
     "user",
+    "course",
 
     "rest_framework",
     "rest_framework.authtoken",
