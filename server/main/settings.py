@@ -49,7 +49,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "lib.meglib.middleware.errors.Log500ErrorsMiddleware",
+    "meglib.middleware.errors.Log500ErrorsMiddleware",
 ]
 
 REST_FRAMEWORK = {
@@ -161,3 +161,4 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
 }
+

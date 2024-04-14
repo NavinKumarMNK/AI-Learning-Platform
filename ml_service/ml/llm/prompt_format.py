@@ -13,7 +13,7 @@ from typing import (
 )
 
 import yaml
-from pydantic import BaseModel, model_validator, validator
+from pydantic import BaseModel, validator
 
 T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=BaseModel)
@@ -43,21 +43,13 @@ class Prompt(BaseModel):
 
 class PromptFormat(BaseModel):
     system: str
-    assistant: str
-    trailing_assistant: str
     user: str
-
-    default_system_message: str = ""
+    assistant: str
     system_in_user: bool = False
-    add_system_tags_even_if_message_is_empty: bool = False
     strip_whitespace: bool = True
-
-    @validator("system")
-    def check_system(cls, value):
-        assert value and (
-            "{instruction}" in value
-        ), "system must be a string containing '{instruction}'"
-        return value
+    trailing_assistant: str
+    accept_sys_from_req: bool = False
+    recursive_sys_prompt: bool = True
 
     @validator("assistant")
     def check_assistant(cls, value):
@@ -73,80 +65,72 @@ class PromptFormat(BaseModel):
         ), "user must be a string containing '{instruction}'"
         return value
 
-    @model_validator(mode="after")
-    def check_user_system_in_user(cls, values):
-        if values["system_in_user"]:
-            assert (
-                "{system}" in values["user"]
-            ), "If system_in_user=True, user must contain '{system}'"
-        return values
+    def generate_prompt(self, messages: List[Message]) -> str:
+        """Generate prompt from system messages
+        
+        Parameters
+        ----------
+        messages: List[Message]
+            list of messages with OpenAI format
 
-    def generate_prompt(self, messages: Union[Prompt, List[Message]]) -> str:
-        if isinstance(messages, Prompt):
-            if isinstance(messages.prompt, str):
-                if not messages.use_prompt_format:
-                    return messages.prompt
-                new_messages = []
-                if self.default_system_message:
-                    new_messages.append(
-                        Message(role="system", content=self.default_system_message),
-                    )
-                new_messages.append(
-                    Message(role="user", content=messages.prompt),
-                )
-                messages = new_messages
-            else:
-                messages = messages.prompt
+        Returns
+        -------
+        prompt: str
+            resulted prompt from applying prompt_template
 
-        # Get system message
+        Raises
+        ------
+            ValueError: If the input messages only contain a system message.
+        """
+        
+        # Extract system message (if present)
         system_message_index = -1
         for i, message in enumerate(messages):
             if message.role == "system":
-                if system_message_index == -1:
-                    system_message_index = i
-                else:
-                    raise ValueError("Only one system message can be specified.")
+                if not self.accept_sys_from_req:
+                    KeyError("system prompt is not accepted from user")
+                system_message_index = i
+                break
 
-        system_message = None
         if system_message_index != -1:
-            system_message = messages.pop(system_message_index)
-        elif (
-            self.default_system_message or self.add_system_tags_even_if_message_is_empty
-        ):
-            system_message = Message(role="system", content=self.default_system_message)
-        if (
-            system_message is not None
-            and (
-                system_message.content or self.add_system_tags_even_if_message_is_empty
-            )
-            and not self.system_in_user
-        ):
-            messages.insert(0, system_message)
+            self.system = messages.pop(system_message_index).content
+        
+        messages.insert(0, Message(role='system', content=self.system))
 
+        if all(message.role == "system" for message in messages):
+            raise ValueError("Only System messages are not allowed")
+        
         prompt = []
-        for message in messages:
+        
+        if self.system_in_user:
+            prompt.append(
+                self.user.format(
+                    system=messages[0].content,
+                    instruction=messages[1].content,
+                )
+            )
+        else:
+            prompt.append(messages[0].content)
+            prompt.append(
+                self.user.format(
+                    instruction=messages[1].content
+                )
+            )
+
+        for message in messages[2:]:
             message_content = message.content
             if self.strip_whitespace:
                 message_content = message_content.strip()
-            if message.role == "system":
-                prompt.append(self.system.format(instruction=message_content))
-            elif message.role == "user":
+            
+            if message.role == "user":
                 if self.system_in_user:
-                    prompt.append(
-                        self.user.format(
-                            instruction=message_content,
-                            system=self.system.format(
-                                instruction=system_message.content
-                            )
-                            if system_message
-                            else "",
-                        )
-                    )
-                    system_message = None
+                    user_prompt = self.user.format(instruction=message_content, system="")    
                 else:
-                    prompt.append(self.user.format(instruction=message_content))
+                    user_prompt = self.user.format(instruction=message_content)
+                prompt.append(user_prompt)
             elif message.role == "assistant":
                 prompt.append(self.assistant.format(instruction=message_content))
+        
         prompt.append(self.trailing_assistant)
         return "".join(prompt)
 

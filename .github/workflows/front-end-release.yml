@@ -1,9 +1,9 @@
-name: Create Release
+name: React.js Build and Release
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'app-v*'
 
 jobs:
   build:
@@ -13,8 +13,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies and build
+        run: |
+          cd ${{ github.workspace }}/app
+          npm install
+          npm run build
+
+
       - name: Compress Folder
-        run: zip -r ml_service.zip ./ml_service
+        run: |
+          cd ${{ github.workspace }}/app/dist
+          zip -r app.zip .
 
       - name: Create Release
         id: create_release
@@ -34,6 +48,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ml_service.zip
-          asset_name: ml_service.zip
+          asset_path: ${{ github.workspace }}/app/dist/app.zip
+          asset_name: app.zip
           asset_content_type: application/zip

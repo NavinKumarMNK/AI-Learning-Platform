@@ -1,0 +1,50 @@
+# fmi, https://docs.ray.io/en/release-2.6.3/serve/production-guide/config.html
+proxy_location: EveryNode
+
+http_options:
+  host: 0.0.0.0
+  port: 5000
+
+# not supported in ray 2.6.3
+# grpc_options:
+#   port: 9000
+#   grpc_servicer_functions: []
+
+# not supported in ray 2.6.3
+# logging_config:
+#   encoding: UTF-8
+#   log_level: INFO
+#   logs_dir: /app/logs
+#   enable_access_log: true
+
+applications:
+- name: llm
+  route_prefix: /api/v1/llm
+  import_path: llm_serve:main
+  args:
+    config_key: llm
+  #runtime_env:
+  #  working_dir: "https://github.com/NavinKumarMNK/AI-Learning-Platform/releases/download/v0.0.1/ml_service.zip"
+
+
+  deployments:
+  - name: LLMDeployment
+    num_replicas: 1
+    user_config:
+      sample: 123
+    max_concurrent_queries: 32
+    #ray_actor_options:
+    #  num_cpus: 32
+    #  num_gpus: 4
+    
+- name: emb
+  route_prefix: /api/v1/embedder
+  import_path: emb_serve:main
+  args:
+    config_key: emb
+  deployments:
+  - name: EMBDeployment
+    num_replicas: 2
+    max_concurrent_queries: 32
+    ray_actor_options:
+      num_cpus: 32

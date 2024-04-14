@@ -1,14 +1,13 @@
 from typing import List, Optional
-
 from pydantic import BaseModel
-
 from ml.llm.prompt_format import Message
 
 
 class GenerateRequest(BaseModel):
     """Generate Completion Request
 
-    Attributes:
+    Attributes
+    ----------
         prompt -> str: Prompt to use for this generation
         messages -> List[Message]: List of messages to use for this generation
         stream -> Bool: flag whether to stream the output or not
@@ -21,7 +20,8 @@ class GenerateRequest(BaseModel):
             output. Default to True as we always want to generate the full
             sequence.
 
-        Sampling parameters:
+        Sampling parameters
+        -------------------
             See -> vllm/sampling_params.py
     """
 
@@ -36,7 +36,8 @@ class GenerateRequest(BaseModel):
 class GenerateResponse(BaseModel):
     """Generate completion response.
 
-    Attributes:
+    Attributes
+    ----------
         output -> str: Model output
         prompt_tokens -> int: Number of tokens in the prompt
         output_tokens -> int: Number of generated tokens

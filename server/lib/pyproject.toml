@@ -1,15 +1,18 @@
 [tool.poetry]
-name = "ai-lp"
+name = "meglib"
 version = "0.1.0"
-description = "Education-AI is a LLM model with RAG pipeline which behaves like a guide and able to solve doubts"
+description = "library used in megacad server"
 authors = ["Navin Kumar M"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "~3.10"
-ray = "2.6.3"
-fastapi = "0.108.0"
-vllm = "0.4.0"
+pypdf2 = "^3.0.1"
+langchain = "^0.1.16"
+pdfminer-six = "^20231228"
+qdrant-client = "^1.8.2"
+httpx = "^0.27.0"
+beautifulsoup4 = "^4.12.3"
 
 
 [build-system]

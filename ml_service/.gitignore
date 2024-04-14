@@ -5,3 +5,7 @@ logs
 __pycache__
 .env
 cudnn.tar.xz
+*.tar.gz
+core.*
+.env
+.history

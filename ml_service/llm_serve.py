@@ -1,31 +1,27 @@
 import asyncio
-import logging
 import os
 import uuid
 from http import HTTPStatus
-from typing import AsyncGenerator, Dict, List, Optional, Tuple
+from typing import AsyncGenerator, Dict, List
 
-# from langchain_community.llms import VLLM
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
+from ml.llm.protocol import GenerateRequest, GenerateResponse
 from ray import serve
 from ray.serve import Application
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response, StreamingResponse
-from vllm.engine.arg_utils import AsyncEngineArgs
-from vllm.engine.async_llm_engine import AsyncLLMEngine
-from vllm.sampling_params import SamplingParams
 
-from ml.llm.engine import VLLMConfig, get_vllm_engine_config
-from ml.llm.model_config import load_model_config
-from ml.llm.protocol import GenerateRequest, GenerateResponse
-
-# from vllm import LLM
-from utils import load_env
-from utils.exception import ConfigFileMissingError, MaximumContextLengthError
+import time
+from utils.base import load_env, load_model_config
+from utils.exception import MaximumContextLengthError, ConfigFileMissingError
 from utils.http import create_error_response
 from utils.loggers import Logger, load_loggers
 from utils.parsers import DictObjectParser, YamlParser
+from vllm.engine.arg_utils import AsyncEngineArgs
+from vllm.engine.async_llm_engine import AsyncLLMEngine
+from vllm.sampling_params import SamplingParams
+from typing import Any
 
 # FastAPI APP
 APP = FastAPI()
@@ -38,11 +34,11 @@ async def validation_exception_handler(
     return create_error_response(HTTPStatus.BAD_REQUEST, str(exc))
 
 
-# VLLM Server Deployment
+# LLM Server Deployment
 @serve.deployment()
 @serve.ingress(APP)
-class VLLMDeployment:
-    """VLLM Generate Deployment Class for Ray Serve."""
+class LLMDeployment:
+    """LLM Generate Deployment Class"""
 
     def __init__(self, config: DictObjectParser, logger: Logger) -> None:
         """Construct
@@ -51,36 +47,47 @@ class VLLMDeployment:
         ----------
         config : DictObjectParser
             contains config for the deployment of llm
+        logger : Logger
+            object which will be used for logging
         """
+
+        load_env(config.env_file if hasattr(config, "env_file") else ())
         self.logger = logger
         self.config = config
-        self.logger.debug("VLLM Deployment Initialized")
-
-        async_engine_args = AsyncEngineArgs(**config.serve_config.to_dict())
-        self.logger.debug(async_engine_args)
+        async_engine_args = AsyncEngineArgs(**self.config.serve_config.to_dict())
 
         # Engine Args
         self.engine = AsyncLLMEngine.from_engine_args(async_engine_args)
         self.engine_model_config = self.engine.engine.get_model_config()
         self.tokenizer = self.engine.engine.tokenizer
         self.max_model_len: float = self.config.serve_config.max_model_len
-        print(self.tokenizer)
 
-        self.logger.debug(f"VLLM Engine Config: {self.engine_model_config}")
-        # print(f"VLLM Engine Config: {self.engine_model_config}")
+        self.logger.info(f"Deployment Inititalized")
+        self.logger.info(f"LLM Deployment Config: {async_engine_args}")
 
+        self.config.root_path = os.environ.get("ROOT_PATH", None)
         try:
-            self.model_config = load_model_config(self.engine_model_config.model)
-        except FileNotFoundError:
-            self.logger.warning(
-                f"No Model Config for: {self.config.serve_config.model}"
+            self.model_config = load_model_config(
+                os.path.join(
+                    self.config.root_path,
+                    "config",
+                    "model",
+                    (self.config.model_name).lower(),
+                )
+                + ".yaml"
             )
+            self.logger.info(f"Model Config: {self.model_config}")
+
+        except FileNotFoundError:
+            self.logger.warning(f"No Model Config for: {self.config.model_name}")
             self.model_config = None
 
-        print(self.model_config, "Deployment Inititalized")
+    def reconfigure(self, config: Dict[str, Any]):
+        """on-the-fly change in the config"""
+        pass
 
     def _next_request_id(self) -> str:
-        # produce unique id using host ID, sequence number and time
+        """produce unique id using host ID, sequence number and time"""
         return str(uuid.uuid1().hex)
 
     def _convert_prompt_to_tokens(
@@ -110,22 +117,42 @@ class VLLMDeployment:
         return True
 
     async def _stream_results(self, output_generator) -> AsyncGenerator[bytes, None]:
-        """Stream the results of the output generator"""
+        """Stream the results of the output generator every second"""
+        last_streamed_time = time.time()
         num_returned = 0
+        output_token_count = 0
+
         async for request_output in output_generator:
-            output = request_output.output[0]
+            output = request_output.outputs[0]
+            output_token_count += 1
+            # Check if one second has passed since last stream
+            now = time.time()
+            if now - last_streamed_time >= self.config.time_consecutive_res:
+                # Generate response outside the loop for efficiency
+                text_output = output.text[num_returned:]
+                response = GenerateResponse(
+                    output=text_output,
+                    prompt_tokens=len(request_output.prompt_token_ids),
+                    output_tokens=output_token_count,
+                    finish_reason=output.finish_reason,
+                )
+
+                yield (response.json() + "\n").encode("utf-8")
+                last_streamed_time = now
+                num_returned += len(text_output)
+                output_token_count = 0
+
+        # Stream any remaining output at the end
+        if output_token_count:
             text_output = output.text[num_returned:]
-            print(text_output, "text_output")
             response = GenerateResponse(
                 output=text_output,
                 prompt_tokens=len(request_output.prompt_token_ids),
-                output_tokens=1,
+                output_tokens=output_token_count,
                 finish_reason=output.finish_reason,
             )
-            await asyncio.sleep(1)
-            print(response)
+
             yield (response.json() + "\n").encode("utf-8")
-            num_returned += len(text_output)
 
     async def _abort_request(self, request_id) -> None:
         await self.engine.abort(request_id=request_id)
@@ -141,7 +168,7 @@ class VLLMDeployment:
     ) -> GenerateResponse:
         """Generate Completion for the requested prompt"""
         try:
-            # either prompt or messages is provided
+            # either prompt or messages should provided
             if not request.prompt and not request.messages:
                 return create_error_response(
                     status_code=400,
@@ -153,7 +180,7 @@ class VLLMDeployment:
                 prompt = request.prompt
             elif self.model_config:
                 prompt = self.model_config.prompt_format.generate_prompt(
-                    request.message
+                    request.messages
                 )
             else:
                 return create_error_response(
@@ -164,9 +191,12 @@ class VLLMDeployment:
             prompt_token_ids = self._convert_prompt_to_tokens(
                 prompt=prompt, request=request
             )
-            request_dict = request.model_dump(
-                exclude=set(["prompt", "messages", "stream"])
-            )
+            request_dict = {
+                k: v
+                for k, v in request.__dict__.items()
+                if k not in ["prompt", "messages", "stream"]
+            }
+
             sampling_params = SamplingParams(**request_dict)
             request_id = self._next_request_id()
 
@@ -215,27 +245,23 @@ class VLLMDeployment:
 def main(args: Dict[str, str]) -> Application:
     # load env
     load_env()
-    MAIN_CONFIG_FILE_PATH = os.getenv("MAIN_CONFIG_FILE_PATH")
-    MAIN_CONFIG_FILE_PATH = "./config.yaml"
-    # if MAIN_CONFIG_FILE_PATH is None:
-    #    raise ConfigFileMissingError(
-    #        "MAIN_CONFIG_FILE_PATH environemental variable is missing."
-    #    )
+    ROOT_PATH = os.environ.get("ROOT_PATH", None)
+    CONFIG_FILE = os.path.join(ROOT_PATH, "config.yaml")
+    if os.path.exists(CONFIG_FILE) is None:
+        raise ConfigFileMissingError(
+            "MAIN_CONFIG_FILE_PATH environmental variable is missing."
+        )
 
     # load main config file
-    yaml_parser = YamlParser(filepath=MAIN_CONFIG_FILE_PATH)
+    yaml_parser = YamlParser(filepath=CONFIG_FILE)
     CONFIG: DictObjectParser = yaml_parser.get_data()
 
-    print(CONFIG, "CONFIG")
     # load loggers
-    if CONFIG.loggers.log:
-        logger: Logger = load_loggers(CONFIG.loggers, name=__name__)
-
+    logger: Logger = load_loggers(CONFIG.loggers, name="ray.serve")
     config_key: str = args.get("config_key")
-    return VLLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
+    return LLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
 
-'''
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = main({"config_key": "llm"})
     serve.run(app)
-'''
