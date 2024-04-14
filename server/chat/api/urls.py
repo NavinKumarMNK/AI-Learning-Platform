@@ -16,7 +16,7 @@ urlpatterns = [
         name="chat-create"
     ),
     path(
-        "<uuid:chat_id>/",
+        "<uuid:chat_id>",
         ChatRetrieveAPIView.as_view(),
         name="chat-retrieve",
     ),
@@ -31,7 +31,7 @@ urlpatterns = [
         name="chat-delete",
     ),
     path(
-        "user/<uuid:user_id>/",
+        "user/<uuid:user_id>",
         ChatListAPIView.as_view(),
         name="chat-list-by-user-id",
     ),
