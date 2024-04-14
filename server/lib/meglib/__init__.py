@@ -1,2 +1,2 @@
-import meglib.ml
-import meglib.middleware
+from meglib import ml
+from meglib import middleware

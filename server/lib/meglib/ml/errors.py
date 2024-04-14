@@ -1,3 +1,6 @@
+__all__ = ["PDFError", "APIError"]
+
+
 class PDFError(Exception):
     """Raised when the error is related to PDF processing"""
 

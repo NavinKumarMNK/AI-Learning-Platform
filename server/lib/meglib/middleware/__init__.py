@@ -1,1 +1,1 @@
-import meglib.middleware.errors
+from meglib.middleware import errors

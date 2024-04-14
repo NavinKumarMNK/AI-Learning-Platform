@@ -8,6 +8,8 @@ from typing import Dict, List, Any, Optional
 from grpc import RpcError
 from google.protobuf.json_format import MessageToJson
 
+__all__ = ["VectorDB"]
+
 
 class VectorDB:
     def __init__(self, config: Dict):
@@ -269,9 +271,11 @@ class VectorDB:
                 grpc.Condition(
                     field=grpc.FieldCondition(
                         key=k,
-                        match=grpc.Match(integer=v)
-                        if isinstance(v, int)
-                        else grpc.Match(keyword=str(v)),
+                        match=(
+                            grpc.Match(integer=v)
+                            if isinstance(v, int)
+                            else grpc.Match(keyword=str(v))
+                        ),
                     )
                 )
                 for k, v in filters.items()

@@ -6,6 +6,8 @@ from PyPDF2 import PdfReader, PdfWriter
 from typing import Dict, List
 from meglib.ml.errors import PDFError
 
+__all__ = ["PDFLoader"]
+
 
 class PDFLoader:
     # (regex ,to_string)

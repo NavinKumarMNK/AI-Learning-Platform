@@ -50,12 +50,12 @@ class LLMDeployment:
         logger : Logger
             object which will be used for logging
         """
-        
-        load_env(config.env_file if hasattr(config, 'env_file') else ())
+
+        load_env(config.env_file if hasattr(config, "env_file") else ())
         self.logger = logger
         self.config = config
         async_engine_args = AsyncEngineArgs(**self.config.serve_config.to_dict())
-        
+
         # Engine Args
         self.engine = AsyncLLMEngine.from_engine_args(async_engine_args)
         self.engine_model_config = self.engine.engine.get_model_config()
@@ -64,23 +64,26 @@ class LLMDeployment:
 
         self.logger.info(f"Deployment Inititalized")
         self.logger.info(f"LLM Deployment Config: {async_engine_args}")
-        
-        self.config.root_path = os.environ.get('ROOT_PATH', None)
+
+        self.config.root_path = os.environ.get("ROOT_PATH", None)
         try:
             self.model_config = load_model_config(
-                os.path.join(self.config.root_path, "config", "model", (self.config.model_name).lower()) + '.yaml'
-                ) 
-            self.logger.info(f"Model Config: {self.model_config}")
-        
-        except FileNotFoundError:
-            self.logger.warning(
-                f"No Model Config for: {self.config.model_name}"
+                os.path.join(
+                    self.config.root_path,
+                    "config",
+                    "model",
+                    (self.config.model_name).lower(),
+                )
+                + ".yaml"
             )
+            self.logger.info(f"Model Config: {self.model_config}")
+
+        except FileNotFoundError:
+            self.logger.warning(f"No Model Config for: {self.config.model_name}")
             self.model_config = None
 
-
     def reconfigure(self, config: Dict[str, Any]):
-        """on-the-fly change in the config"""        
+        """on-the-fly change in the config"""
         pass
 
     def _next_request_id(self) -> str:
@@ -135,10 +138,10 @@ class LLMDeployment:
                 )
 
                 yield (response.json() + "\n").encode("utf-8")
-                last_streamed_time = now  
+                last_streamed_time = now
                 num_returned += len(text_output)
                 output_token_count = 0
-        
+
         # Stream any remaining output at the end
         if output_token_count:
             text_output = output.text[num_returned:]
@@ -150,7 +153,7 @@ class LLMDeployment:
             )
 
             yield (response.json() + "\n").encode("utf-8")
-            
+
     async def _abort_request(self, request_id) -> None:
         await self.engine.abort(request_id=request_id)
 
@@ -188,7 +191,11 @@ class LLMDeployment:
             prompt_token_ids = self._convert_prompt_to_tokens(
                 prompt=prompt, request=request
             )
-            request_dict = {k: v for k, v in request.__dict__.items() if k not in ["prompt", "messages", "stream"]}
+            request_dict = {
+                k: v
+                for k, v in request.__dict__.items()
+                if k not in ["prompt", "messages", "stream"]
+            }
 
             sampling_params = SamplingParams(**request_dict)
             request_id = self._next_request_id()
@@ -198,7 +205,6 @@ class LLMDeployment:
                 sampling_params=sampling_params,
                 request_id=request_id,
                 prompt_token_ids=prompt_token_ids,
-
             )
 
             # Handle streaming, if the socket connection drops then abort the request processing
@@ -251,7 +257,7 @@ def main(args: Dict[str, str]) -> Application:
     CONFIG: DictObjectParser = yaml_parser.get_data()
 
     # load loggers
-    logger: Logger = load_loggers(CONFIG.loggers, name='ray.serve')
+    logger: Logger = load_loggers(CONFIG.loggers, name="ray.serve")
     config_key: str = args.get("config_key")
     return LLMDeployment.bind(getattr(CONFIG, config_key, None), logger=logger)
 

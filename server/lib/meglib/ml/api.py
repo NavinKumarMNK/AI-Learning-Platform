@@ -5,10 +5,13 @@ import sys
 
 from typing import Dict, AsyncGenerator
 from abc import ABC, abstractmethod
-from errors import APIError
+
+__all__ = ["API", "Llm", "Embedding"]
 
 
 class API(ABC):
+    """BaseClass, This class can be inherited to communicated with Ray Deployments"""
+
     def __init__(self, host: str, port: int, endpoint: str):
         self.endpoint_url = f"http://{host}:{port}{endpoint}"
 
@@ -119,7 +122,7 @@ class Embedding(API):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 url=self.endpoint_url + "/embed",
-                params=payload,
+                json=payload,
                 headers=headers,
                 timeout=30,
             )

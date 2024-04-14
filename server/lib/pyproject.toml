@@ -12,6 +12,7 @@ langchain = "^0.1.16"
 pdfminer-six = "^20231228"
 qdrant-client = "^1.8.2"
 httpx = "^0.27.0"
+beautifulsoup4 = "^4.12.3"
 
 
 [build-system]

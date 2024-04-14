@@ -3,7 +3,7 @@ proxy_location: EveryNode
 
 http_options:
   host: 0.0.0.0
-  port: 9999
+  port: 5000
 
 # not supported in ray 2.6.3
 # grpc_options:
@@ -44,7 +44,7 @@ applications:
     config_key: emb
   deployments:
   - name: EMBDeployment
-    num_replicas: 1
-    max_concurrent_queries: 8
+    num_replicas: 2
+    max_concurrent_queries: 32
     ray_actor_options:
-      num_cpus: 64
+      num_cpus: 32
