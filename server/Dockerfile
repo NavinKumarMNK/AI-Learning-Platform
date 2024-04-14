@@ -8,7 +8,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     libpq-dev \
     curl \
     wget \
-    build-essential \
     pkg-config \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
