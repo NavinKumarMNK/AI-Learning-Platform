@@ -3,7 +3,7 @@ name: React.js Build and Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'app-v*'
 
 jobs:
   build:

@@ -55,7 +55,7 @@ async def generate_text(endpoint_url: str, payload: Dict) -> List[str]:
 
 @click.command()
 @click.option("--host", default="localhost", help="Host")
-@click.option("--port", default=9999, help="Port")
+@click.option("--port", default=5000, help="Port")
 @click.option("--stream", default=True, help="Stream")
 @click.option("--max-tokens", default=4096, help="Max tokens")
 @click.option("--temperature", default=0.3, help="Temperature")
