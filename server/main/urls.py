@@ -20,10 +20,9 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("chat/", include("chat.urls")),
-    path("v1/chat/", include("chat.api.urls")),
-    path("v1/user/", include("user.api.urls")),
-    path("v1/course/", include("course.urls")),
+    path("v1/chat/", include("api.v1.chat.urls")),
+    path("v1/user/", include("api.v1.user.urls")),
+    path("v1/course/", include("api.v1.course.urls")),
     path("v1/", include("megacad.api.urls")),
     path("", include("megacad.urls")),
 ]

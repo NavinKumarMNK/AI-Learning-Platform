@@ -73,7 +73,8 @@ class DocumentProcessor:
 
 if __name__ == "__main__":
     obj = DocumentProcessor()
-    docs = Document("""# Title of the Document
+    docs = Document(
+        """# Title of the Document
 
 ## Introduction
 The introduction provides an overview of the topic at hand. It should be engaging and informative.
@@ -100,7 +101,8 @@ Details about another aspect of Topic B.
 The conclusion wraps up the document, summarizing the main points and providing final thoughts.
 
 ## References
-If any external sources were used in the creation of the document, they should be listed here.""")
+If any external sources were used in the creation of the document, they should be listed here."""
+    )
 
     _docs = obj.recursive_split_overlap(document=docs, min_size=200, overlap=50)
     print(len(_docs), _docs[0])

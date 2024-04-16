@@ -39,14 +39,13 @@ clean:
 	docker-compose down --volumes --remove-orphans
 	docker-compose rm -f
 
-
 rmi:
 	docker-compose down --volumes --rmi all
 
 logs: 
 	docker-compose -p $(DEV_ENV_NAME) logs -f
 
-shell:
+attach:
 	docker-compose -p $(DEV_ENV_NAME) exec web bash
 
 restart:
@@ -66,3 +65,6 @@ local-migrate:
 
 attach-cassandra:
 	docker-compose -p $(DEV_ENV_NAME) exec cassandra bash
+
+rm-pycache:
+	find . -type d -name __pycache__ -exec rm -r {} +

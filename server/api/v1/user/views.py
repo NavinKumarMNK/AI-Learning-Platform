@@ -13,12 +13,9 @@ from megacad.api.mixins import StaffEditorPermissionMixin
 # logger = settings.LOGGER
 
 
-
-
 class UserCreateAPIView(
-    StaffEditorPermissionMixin,
-    mixins.CreateModelMixin,
-    generics.GenericAPIView):
+    StaffEditorPermissionMixin, mixins.CreateModelMixin, generics.GenericAPIView
+):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -36,9 +33,8 @@ class UserCreateAPIView(
 
 
 class UserRetrieveAPIView(
-    StaffEditorPermissionMixin,
-    mixins.RetrieveModelMixin,
-    generics.GenericAPIView):
+    StaffEditorPermissionMixin, mixins.RetrieveModelMixin, generics.GenericAPIView
+):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = "user_id"
@@ -48,9 +44,8 @@ class UserRetrieveAPIView(
 
 
 class UserUpdateAPIView(
-    StaffEditorPermissionMixin,
-    mixins.UpdateModelMixin,
-    generics.GenericAPIView):
+    StaffEditorPermissionMixin, mixins.UpdateModelMixin, generics.GenericAPIView
+):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = "user_id"
@@ -60,9 +55,8 @@ class UserUpdateAPIView(
 
 
 class UserDeleteAPIView(
-    StaffEditorPermissionMixin,
-    mixins.DestroyModelMixin,
-    generics.GenericAPIView):
+    StaffEditorPermissionMixin, mixins.DestroyModelMixin, generics.GenericAPIView
+):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = "user_id"
@@ -72,9 +66,8 @@ class UserDeleteAPIView(
 
 
 class UserListAPIView(
-    StaffEditorPermissionMixin,
-    mixins.ListModelMixin,
-    generics.GenericAPIView):
+    StaffEditorPermissionMixin, mixins.ListModelMixin, generics.GenericAPIView
+):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 

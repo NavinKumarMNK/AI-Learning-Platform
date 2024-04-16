@@ -14,12 +14,9 @@ from megacad.api.mixins import StaffEditorPermissionMixin
 # logger = settings.LOGGER
 
 
-
-
 class CourseCreateAPIView(
-    StaffEditorPermissionMixin,
-    mixins.CreateModelMixin,
-    generics.GenericAPIView):
+    StaffEditorPermissionMixin, mixins.CreateModelMixin, generics.GenericAPIView
+):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 
@@ -37,15 +34,14 @@ class CourseCreateAPIView(
 
 
 class CourseRetrieveAPIView(
-    StaffEditorPermissionMixin,
-    mixins.RetrieveModelMixin,
-    generics.GenericAPIView):
+    StaffEditorPermissionMixin, mixins.RetrieveModelMixin, generics.GenericAPIView
+):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     lookup_field = "course_id"
 
     def get(self, request, *args, **kwargs):
-        course_id = kwargs.get('course_id')
+        course_id = kwargs.get("course_id")
         course = Course.objects.get(course_id=course_id)
         serializer = CourseSerializer(course)
         return Response(serializer.data)
@@ -57,7 +53,8 @@ class CourseUpdateMixinAPIView(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.UpdateModelMixin,
-    generics.GenericAPIView):
+    generics.GenericAPIView,
+):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     lookup_field = "course_id"
@@ -67,9 +64,8 @@ class CourseUpdateMixinAPIView(
 
 
 class CourseDeleteAPIView(
-    StaffEditorPermissionMixin,
-    mixins.DestroyModelMixin,
-    generics.GenericAPIView):
+    StaffEditorPermissionMixin, mixins.DestroyModelMixin, generics.GenericAPIView
+):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     lookup_field = "course_id"
@@ -79,9 +75,8 @@ class CourseDeleteAPIView(
 
 
 class CourseListAPIView(
-    StaffEditorPermissionMixin,
-    mixins.ListModelMixin,
-    generics.GenericAPIView):
+    StaffEditorPermissionMixin, mixins.ListModelMixin, generics.GenericAPIView
+):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 

@@ -9,13 +9,10 @@ from .views import (
     CourseUpdateMixinAPIView,
 )
 
-app_name = "course"
+app_name = "api.v1.course"
 
 urlpatterns = [
-    path("",
-        CourseCreateAPIView.as_view(),
-        name="course-create"
-    ),
+    path("", CourseCreateAPIView.as_view(), name="course-create"),
     path(
         "<uuid:course_id>",
         CourseRetrieveAPIView.as_view(),

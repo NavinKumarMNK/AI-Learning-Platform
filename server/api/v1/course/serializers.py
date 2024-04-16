@@ -26,7 +26,6 @@ class DateTimeField(serializers.Field):
             return datetime.fromisoformat(data)
         except ValueError:
             raise serializers.ValidationError("Invalid datetime format.")
-            
 
 
 class TextField(serializers.CharField):
@@ -35,9 +34,6 @@ class TextField(serializers.CharField):
 
     def to_internal_value(self, data):
         return str(data)
-    
-
-
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -50,8 +46,14 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ('course_id', 'name', 'description', 'instructor_name', 'created_at', 'updated_at')
-
+        fields = (
+            "course_id",
+            "name",
+            "description",
+            "instructor_name",
+            "created_at",
+            "updated_at",
+        )
 
     def validate_name(self, value):
         """

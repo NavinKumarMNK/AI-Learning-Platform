@@ -11,10 +11,7 @@ from .views import (
 app_name = "chat"
 
 urlpatterns = [
-    path("",
-        ChatCreateAPIView.as_view(),
-        name="chat-create"
-    ),
+    path("", ChatCreateAPIView.as_view(), name="chat-create"),
     path(
         "<uuid:chat_id>",
         ChatRetrieveAPIView.as_view(),
