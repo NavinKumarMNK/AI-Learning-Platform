@@ -30,6 +30,7 @@ async def generate_text(endpoint_url: str, payload: Dict) -> List[str]:
                 json=payload,
                 headers=headers,
                 timeout=30,
+                follow_redirects=True,
             ) as response:
                 if response.status_code == 200:
                     async for line in response.aiter_lines():
