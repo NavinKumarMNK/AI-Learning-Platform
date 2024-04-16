@@ -34,7 +34,7 @@ class API(ABC):
 
 class Llm(API):
     async def query(self, payload) -> AsyncGenerator:
-        """This method streams results from a POST request to the '/generate' endpoint.
+        """This method streams results from a POST request to the endpoint.
 
         Parameters
         ----------
@@ -55,7 +55,7 @@ class Llm(API):
         async with httpx.AsyncClient() as client:
             async with client.stream(
                 method="POST",
-                url=self.endpoint_url + "/generate",
+                url=self.endpoint_url,
                 json=payload,
                 headers=headers,
                 timeout=30,
@@ -69,7 +69,7 @@ class Llm(API):
                     response.raise_for_status()
 
     async def query_no_stream(self, payload) -> Dict:
-        """This method returns a single result from a POST request to the '/generate' endpoint.
+        """This method returns a single result from a POST request to the endpoint.
 
         Parameters
         ----------
@@ -89,7 +89,7 @@ class Llm(API):
         headers = {"Content-Type": "application/json"}
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                self.endpoint_url + "/generate",
+                self.endpoint_url,
                 json=payload,
                 headers=headers,
                 timeout=30,
@@ -101,7 +101,7 @@ class Llm(API):
 
 class Embedding(API):
     async def query(self, payload) -> Dict:
-        """This method returns a single result from a POST request to the '/embed' endpoint.
+        """This method returns a single result from a POST request to the endpoint.
 
         Parameters
         ----------
@@ -121,7 +121,7 @@ class Embedding(API):
         headers = {"Content-Type": "application/json"}
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                url=self.endpoint_url + "/embed",
+                url=self.endpoint_url,
                 json=payload,
                 headers=headers,
                 timeout=30,
@@ -170,12 +170,12 @@ if __name__ == "__main__":
     llm = Llm(
         host="172.16.0.57",
         port=9999,
-        endpoint="/api/v1/llm",
+        endpoint="/v1/llm",
     )
     emb = Embedding(
         host="172.16.0.57",
         port=9999,
-        endpoint="/api/v1/embedder",
+        endpoint="/v1/embed",
     )
 
     # typical workflow

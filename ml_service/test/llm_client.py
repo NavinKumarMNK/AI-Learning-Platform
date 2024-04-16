@@ -77,7 +77,7 @@ def main(
 
     console = Console()
 
-    url = f"http://{host}:{port}/api/v1/llm/generate"
+    url = f"http://{host}:{port}/v1/llm"
     welcome_message = Text("""Hello, this is MegAcad, your AI Educational Tutor 
 You can type the prompts or messages 
 Please be polite towards me & Remember, I can make mistakes too """)

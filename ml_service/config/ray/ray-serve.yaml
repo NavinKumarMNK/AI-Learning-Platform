@@ -19,7 +19,7 @@ http_options:
 
 applications:
 - name: llm
-  route_prefix: /api/v1/llm
+  route_prefix: /v1/llm
   import_path: llm_serve:main
   args:
     config_key: llm
@@ -37,11 +37,12 @@ applications:
     #  num_cpus: 32
     #  num_gpus: 4
     
-- name: emb
-  route_prefix: /api/v1/embedder
+- name: embed
+  route_prefix: /v1/embed
   import_path: emb_serve:main
   args:
-    config_key: emb
+    config_key: embed
+    
   deployments:
   - name: EMBDeployment
     num_replicas: 2

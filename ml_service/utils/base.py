@@ -3,22 +3,24 @@ from typing import Optional
 from ml.llm.prompt_format import ModelConfig
 import dotenv
 
-def load_env(path: Optional[str]=None):
+
+def load_env(path: Optional[str] = None):
     """Load ths the root environment variable
-    
+
     Parameters
     ----------
     path : str
         path of the .env file thats needs to get loaded
     """
     if path:
-        dotenv.load_dotenv(config.env_file)
-    else: 
+        dotenv.load_dotenv(path)
+    else:
         dotenv.load_dotenv()
+
 
 def load_model_config(config_path: str) -> ModelConfig:
     """Load the model_config
-    
+
     Parameters
     ----------
     config_path: str

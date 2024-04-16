@@ -28,6 +28,13 @@ services:
     ports:
       - "6333:6333"
       - "6334:6334"
+  ml_service:
+    build: ./docker/ml_service
+    ports:
+      - "5000:5000"
+    environment:
+      - ML_SERVICE_HOST=${ML_SERVICE_HOST}
+      - ML_SERVICE_PORT=${ML_SERVICE_PORT}
   web:
     build: .
     volumes:
@@ -50,6 +57,10 @@ services:
       - postgres
       - cassandra
       - qdrant
+      - ml_service
+      
+    
+      
 
 volumes:
   postgres_data:
