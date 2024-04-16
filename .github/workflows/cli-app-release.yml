@@ -29,9 +29,6 @@ jobs:
     - name: Build with PyInstaller
       run: pyinstaller --onefile cli.py
 
-    - name: Rename executable
-      run: mv ./dist/cli ./dist/cli-${{ matrix.os }}
-
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -50,6 +47,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/cli-${{ matrix.os }}
+        asset_path: ./dist/cli
         asset_name: cli-${{ matrix.os }}
         asset_content_type: application/octet-stream
