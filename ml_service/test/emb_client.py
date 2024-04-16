@@ -1,7 +1,9 @@
 import requests
 import numpy as np
 
-EMBEDDING_URL = "http://172.16.0.57:5000/api/v1/embedder/embed"  # Adjust if your deployment is on a different port
+EMBEDDING_URL = (
+    "http://localhost:5000/v1/embed"  # Adjust if your deployment is on a different port
+)
 
 # Test data
 test_cases = [

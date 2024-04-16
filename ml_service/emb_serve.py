@@ -51,7 +51,7 @@ class EMBDeployment:
         """Health check endpoint."""
         return Response(status_code=200)
 
-    @APP.post("/embed")
+    @APP.post("/")
     async def generate_embedding(self, request: Request) -> JSONResponse:
         data = await request.json()
         req_type = data.get("type")

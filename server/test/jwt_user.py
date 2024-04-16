@@ -1,9 +1,9 @@
 # Blog post reference: https://www.codingforentrepreneurs.com/blog/python-jwt-client-django-rest-framework-simplejwt
 
-from dataclasses import dataclass 
+from dataclasses import dataclass
 import requests
 from getpass import getpass
-import pathlib 
+import pathlib
 import json
 
 
@@ -13,17 +13,18 @@ class JWTClient:
     Use a dataclass decorator
     to simply the class construction
     """
-    access:str = None
-    refresh:str = None
+
+    access: str = None
+    refresh: str = None
     # ensure this matches your simplejwt config
     header_type: str = "Bearer"
     # this assumesy ou have DRF running on localhost:8000
-    base_endpoint = "http://localhost:8000/api/v1"
+    base_endpoint = "http://localhost:8000/v1"
     # this file path is insecure
     cred_path: pathlib.Path = pathlib.Path("creds.json")
 
     def __post_init__(self):
-        if self.cred_path.exists(): 
+        if self.cred_path.exists():
             """
             You have stored creds,
             let's verify them
@@ -50,8 +51,8 @@ class JWTClient:
                 if necessary, Refresh token ->
                 if necessary, Run login process
                 """
-                self.access = data.get('access')
-                self.refresh = data.get('refresh')
+                self.access = data.get("access")
+                self.refresh = data.get("refresh")
                 token_verified = self.verify_token()
                 if not token_verified:
                     """
@@ -73,7 +74,7 @@ class JWTClient:
             Run login process
             """
             self.perform_auth()
-        
+
     def get_headers(self, header_type=None):
         """
         Default headers for HTTP requests
@@ -83,9 +84,7 @@ class JWTClient:
         token = self.access
         if not token:
             return {}
-        return {
-                "Authorization": f"{_type} {token}"
-        }
+        return {"Authorization": f"{_type} {token}"}
 
     def perform_auth(self):
         """
@@ -93,27 +92,27 @@ class JWTClient:
         Without exposing password(s) during the
         collection process.
         """
-        endpoint = f"{self.base_endpoint}/token/" 
+        endpoint = f"{self.base_endpoint}/token/"
         username = input("What is your username?\n")
         password = getpass("What is your password?\n")
-        r = requests.post(endpoint, json={'username': username, 'password': password}) 
+        r = requests.post(endpoint, json={"username": username, "password": password})
         if r.status_code != 200:
             raise Exception(f"Access not granted: {r.text}")
-        print('access granted')
+        print("access granted")
         self.write_creds(r.json())
 
-    def write_creds(self, data:dict):
+    def write_creds(self, data: dict):
         """
         Store credentials as a local file
         and update instance with correct
         data.
         """
         if self.cred_path is not None:
-            self.access = data.get('access')
-            self.refresh = data.get('refresh')
+            self.access = data.get("access")
+            self.refresh = data.get("refresh")
             if self.access and self.refresh:
                 self.cred_path.write_text(json.dumps(data))
-    
+
     def verify_token(self):
         """
         Simple method for verifying your
@@ -121,13 +120,11 @@ class JWTClient:
         your `access` token. A 200 HTTP status
         means success, anything else means failure.
         """
-        data = {
-            "token": f"{self.access}"
-        }
-        endpoint = f"{self.base_endpoint}/token/verify/" 
+        data = {"token": f"{self.access}"}
+        endpoint = f"{self.base_endpoint}/token/verify/"
         r = requests.post(endpoint, json=data)
         return r.status_code == 200
-    
+
     def clear_tokens(self):
         """
         Remove any/all JWT token data
@@ -138,7 +135,7 @@ class JWTClient:
         self.refresh = None
         if self.cred_path.exists():
             self.cred_path.unlink()
-    
+
     def perform_refresh(self):
         """
         Refresh the access token by using the correct
@@ -146,94 +143,81 @@ class JWTClient:
         """
         print("Refreshing token.")
         headers = self.get_headers()
-        data = {
-            "refresh": f"{self.refresh}"
-        }
-        endpoint = f"{self.base_endpoint}/token/refresh/" 
+        data = {"refresh": f"{self.refresh}"}
+        endpoint = f"{self.base_endpoint}/token/refresh/"
         r = requests.post(endpoint, json=data, headers=headers)
         if r.status_code != 200:
             self.clear_tokens()
             return False
         refresh_data = r.json()
-        if not 'access' in refresh_data:
+        if not "access" in refresh_data:
             self.clear_tokens()
             return False
-        stored_data = {
-            'access': refresh_data.get('access'),
-            'refresh': self.refresh
-        }
+        stored_data = {"access": refresh_data.get("access"), "refresh": self.refresh}
         self.write_creds(stored_data)
         return True
 
     def create(self, endpoint=None, data=None, limit=3):
-
         headers = self.get_headers()
         if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/user/" 
-        r = requests.post(endpoint, headers=headers, json=data) 
+            endpoint = f"{self.base_endpoint}/user/"
+        r = requests.post(endpoint, headers=headers, json=data)
         if r.status_code != 201:
             raise Exception(f"Request not complete {r.text}")
         data = r.json()
         return data
-    
-    def get(self, endpoint=None, user_id=None, limit=3):
 
+    def get(self, endpoint=None, user_id=None, limit=3):
         headers = self.get_headers()
         if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/user/{user_id}" 
-        r = requests.get(endpoint, headers=headers) 
+            endpoint = f"{self.base_endpoint}/user/{user_id}"
+        r = requests.get(endpoint, headers=headers)
         if r.status_code != 200:
             raise Exception(f"Request not complete {r.text}")
         data = r.json()
         return data
 
     def list(self, endpoint=None, limit=3):
-        
         headers = self.get_headers()
         if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/user/users" 
-        r = requests.get(endpoint, headers=headers) 
+            endpoint = f"{self.base_endpoint}/user/users"
+        r = requests.get(endpoint, headers=headers)
         if r.status_code != 200:
             raise Exception(f"Request not complete {r.text}")
         data = r.json()
         return data
-    
+
     def delete(self, endpoint=None, user_id=None, limit=3):
-        
         headers = self.get_headers()
         if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/user/{user_id}/delete" 
-        r = requests.delete(endpoint, headers=headers) 
+            endpoint = f"{self.base_endpoint}/user/{user_id}/delete"
+        r = requests.delete(endpoint, headers=headers)
         if r.status_code != 204:
             raise Exception(f"Request not complete {r.text}")
         data = r.status_code
         return data
-    
+
     def update(self, endpoint=None, user_id=None, data=None, limit=3):
-        
         headers = self.get_headers()
         if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/user/{user_id}/update" 
-        r = requests.patch(endpoint, headers=headers, json=data) 
+            endpoint = f"{self.base_endpoint}/user/{user_id}/update"
+        r = requests.patch(endpoint, headers=headers, json=data)
         if r.status_code != 200:
             raise Exception(f"Request not complete {r.text}")
         data = r.json()
         return data
+
 
 if __name__ == "__main__":
     """
     Here's Simple example of how to use our client above.
     """
-    
+
     # this will either prompt a login process
     # or just run with current stored data
-    client = JWTClient() 
+    client = JWTClient()
 
-    data = {
-        "email": "moony@gmail.com",
-        "password": "45678123",
-        "role" : "instructor"
-    }
+    data = {"email": "moony@gmail.com", "password": "45678123", "role": "instructor"}
 
     user_id = "108e30b1-d6ba-4dbf-8441-316ef3e71cc9"
 
@@ -243,10 +227,6 @@ if __name__ == "__main__":
     # lookup_1_data = client.delete(user_id=user_id, limit=5)
     # lookup_1_data = client.update(user_id=user_id, data=data, limit=5)
     print(lookup_1_data)
-
-
-
-
 
     # # We used pagination at our endpoint so we have:
     # results = lookup_1_data.get('results')

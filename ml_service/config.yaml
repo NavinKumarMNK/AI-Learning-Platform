@@ -19,7 +19,7 @@ llm:
     disable_custom_all_reduce: True
     trust_remote_code: true # for cohere models comment it
 
-emb:
+embed:
   serve_config:
     model_name: BAAI/bge-large-en-v1.5
 

@@ -162,7 +162,7 @@ class LLMDeployment:
         """Health check endpoint."""
         return Response(status_code=200)
 
-    @APP.post("/generate")
+    @APP.post("/")
     async def generate(
         self, request: GenerateRequest, raw_request: Request
     ) -> GenerateResponse:

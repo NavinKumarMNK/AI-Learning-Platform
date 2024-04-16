@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
+
 import asyncio
 import os
 
 import django
 from django.contrib.auth import get_user_model
-from dotenv import load_dotenv
+from asgiref.sync import sync_to_async
 
-load_dotenv()
+from dotenv import load_dotenv
+from utils.base import load_env
+
+load_env()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings")
 django.setup()
 User = get_user_model()
-
-
-from asgiref.sync import sync_to_async
 
 
 async def create_superuser():

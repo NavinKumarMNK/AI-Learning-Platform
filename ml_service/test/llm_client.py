@@ -30,6 +30,7 @@ async def generate_text(endpoint_url: str, payload: Dict) -> List[str]:
                 json=payload,
                 headers=headers,
                 timeout=30,
+                follow_redirects=True,
             ) as response:
                 if response.status_code == 200:
                     async for line in response.aiter_lines():
@@ -77,7 +78,7 @@ def main(
 
     console = Console()
 
-    url = f"http://{host}:{port}/api/v1/llm/generate"
+    url = f"http://{host}:{port}/v1/llm"
     welcome_message = Text("""Hello, this is MegAcad, your AI Educational Tutor 
 You can type the prompts or messages 
 Please be polite towards me & Remember, I can make mistakes too """)

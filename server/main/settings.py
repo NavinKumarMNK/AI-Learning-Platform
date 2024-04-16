@@ -2,14 +2,14 @@ import os
 from pathlib import Path
 import datetime
 
-from utils import utils
+from utils import base
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEGACAD_DIR = os.path.join(BASE_DIR, "megacad")
 
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-CONFIG = utils.load_config(BASE_DIR / "config.yaml")
+CONFIG = base.load_config(BASE_DIR / "config.yaml")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
@@ -27,12 +27,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_cassandra_engine",
-
     "megacad",
     "chat",
     "user",
     "course",
-
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
@@ -155,10 +153,10 @@ STORAGES = {
 
 # Logger
 import logging
+
 LOGGER = logging.getLogger(__name__)
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
 }
-
