@@ -7,8 +7,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -26,6 +28,9 @@ jobs:
 
     - name: Build with PyInstaller
       run: pyinstaller --onefile cli.py
+
+    - name: Rename executable
+      run: mv ./dist/cli ./dist/cli-${{ matrix.os }}
 
     - name: Create Release
       id: create_release
@@ -45,6 +50,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/cli
-        asset_name: cli
+        asset_path: ./dist/cli-${{ matrix.os }}
+        asset_name: cli-${{ matrix.os }}
         asset_content_type: application/octet-stream
