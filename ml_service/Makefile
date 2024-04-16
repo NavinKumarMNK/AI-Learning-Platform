@@ -54,7 +54,7 @@ ray-log:
 	ray logs config/ray/ray-cluster.yaml
 
 ray-rsync-up:
-	ray rsync-up config/ray/ray-cluster.yaml -v
+	ray rsync-up config/ray/ray-cluster.yaml
 
 ray-rsync-down:
 	ray rsync-downs config/ray/ray-cluster.yaml
