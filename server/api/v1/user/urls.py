@@ -9,13 +9,10 @@ from .views import (
     UserUpdateAPIView,
 )
 
-app_name = "user"
+app_name = "api.v1.user"
 
 urlpatterns = [
-    path("",
-        UserCreateAPIView.as_view(),
-        name="user-create"
-    ),
+    path("", UserCreateAPIView.as_view(), name="user-create"),
     path(
         "<uuid:user_id>",
         UserRetrieveAPIView.as_view(),

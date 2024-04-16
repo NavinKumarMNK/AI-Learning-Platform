@@ -13,6 +13,7 @@ from django.conf import settings
 logger = settings.LOGGER
 
 
+# outdated
 async def qdrant(message_emb):
     return "Yo, Apples are red."
 

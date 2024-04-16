@@ -26,7 +26,7 @@ class DateTimeField(serializers.Field):
             return datetime.fromisoformat(data)
         except ValueError:
             raise serializers.ValidationError("Invalid datetime format.")
-            
+
 
 class EmailField(serializers.EmailField):
     def to_representation(self, value):
@@ -35,6 +35,7 @@ class EmailField(serializers.EmailField):
     def to_internal_value(self, data):
         try:
             from django.core.validators import validate_email
+
             validate_email(data)
             return data
         except ValueError:
@@ -59,7 +60,6 @@ class TextField(serializers.CharField):
         return str(data)
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     user_id = UUIDField(required=False)
     name = TextField(required=False)
@@ -72,7 +72,16 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('user_id', 'name', 'email', 'password', 'role', 'created_at', 'updated_at', 'chat_ids')
+        fields = (
+            "user_id",
+            "name",
+            "email",
+            "password",
+            "role",
+            "created_at",
+            "updated_at",
+            "chat_ids",
+        )
 
     def create(self, validated_data):
         return User.objects.create(**validated_data)
@@ -90,7 +99,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         return value
 
-    
     def validate_password(self, value):
         """
         Check that the password is not empty.
