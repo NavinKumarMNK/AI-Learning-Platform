@@ -99,12 +99,12 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
+  
     - name: Download all workflow run artifacts
       uses: actions/download-artifact@v2
-
+  
     - name: Create Release
-      id: create_release-ubuntu
+      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -113,36 +113,37 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset
-      id: upload-release-asset 
+  
+    - name: Upload Release Asset - Linux
+      id: upload-release-asset-linux
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./cli-linux/cli-linux
+        asset_path: ./dist/cli-linux
         asset_name: cli-linux
         asset_content_type: application/octet-stream
-
-    - name: Upload Release Asset
-      id: upload-release-asset-windows 
+  
+    - name: Upload Release Asset - Windows
+      id: upload-release-asset-windows
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./cli-windows/cli-windows.exe
+        asset_path: ./dist/cli-windows.exe
         asset_name: cli-windows.exe
         asset_content_type: application/octet-stream
-
-    - name: Upload Release Asset
+  
+    - name: Upload Release Asset - macOS
       id: upload-release-asset-macos
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./cli-macos/cli-macos
+        asset_path: ./dist/cli-macos
         asset_name: cli-macos
         asset_content_type: application/octet-stream
+  
