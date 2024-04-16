@@ -6,9 +6,8 @@ on:
       - 'cli-v*'
 
 jobs:
-  build:
-    runs-on: macos-latest
-
+  build-linux:
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -27,8 +26,85 @@ jobs:
     - name: Build with PyInstaller
       run: pyinstaller --onefile cli.py
 
+    - name: Rename executable
+      run: mv ./dist/cli ./dist/cli-linux
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: cli-linux
+        path: ./dist/cli-linux
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.cli.txt
+        pip install pyinstaller
+
+    - name: Build with PyInstaller
+      run: pyinstaller --onefile cli.py
+
+    - name: Rename executable
+      run: mv ./dist/cli.exe ./dist/cli-windows.exe
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: cli-windows
+        path: ./dist/cli-windows.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.cli.txt
+        pip install pyinstaller
+
+    - name: Build with PyInstaller
+      run: pyinstaller --onefile cli.py
+
+    - name: Rename executable
+      run: mv ./dist/cli ./dist/cli-macos
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: cli-macos
+        path: ./dist/cli-macos
+
+  release:
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download all workflow run artifacts
+      uses: actions/download-artifact@v2
+
     - name: Create Release
-      id: create_release
+      id: create_release-ubuntu
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,6 +121,28 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/cli
-        asset_name: cli
+        asset_path: ./cli-linux/cli-linux
+        asset_name: cli-linux
+        asset_content_type: application/octet-stream
+
+    - name: Upload Release Asset
+      id: upload-release-asset-windows 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./cli-windows/cli-windows.exe
+        asset_name: cli-windows.exe
+        asset_content_type: application/octet-stream
+
+    - name: Upload Release Asset
+      id: upload-release-asset-macos
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./cli-macos/cli-macos
+        asset_name: cli-macos
         asset_content_type: application/octet-stream
