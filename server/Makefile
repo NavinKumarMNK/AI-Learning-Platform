@@ -1,8 +1,7 @@
 DEV_ENV_NAME = ailp-dev
 PROD_ENV_NAME = ailp-prod
 
-.PHONY = attach-cassandra clean-pycache run run-prod stop stop-prod clean logs restart images build build-prod up up-prod
-
+.PHONY: clean
 
 build:
 	docker-compose -p $(DEV_ENV_NAME) -f docker-compose.yaml build
