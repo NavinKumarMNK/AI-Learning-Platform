@@ -1,5 +1,15 @@
 version: '3'
 services:
+  web:
+    build: ./docker/nginx/
+    ports:
+      - "9999:80"
+    environment:
+      - NGINX_HOST=localhost
+      - SERVER_NAME=${WEB_ADDRESS}
+      - DJANGO_HOST=${DJANGO_HOST}
+    depends_on:
+      - django
   postgres:
     build: ./docker/postgres/
     ports:
@@ -35,7 +45,7 @@ services:
     environment:
       - ML_SERVICE_HOST=${ML_SERVICE_HOST}
       - ML_SERVICE_PORT=${ML_SERVICE_PORT}
-  web:
+  django:
     build: .
     volumes:
       - .:/app
@@ -58,9 +68,6 @@ services:
       - cassandra
       - qdrant
       - ml_service
-      
-    
-      
 
 volumes:
   postgres_data:

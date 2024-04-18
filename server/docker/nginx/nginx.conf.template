@@ -1,0 +1,16 @@
+events {
+    worker_connections 1024;
+}
+
+http {
+    server {
+        listen 80;
+        server_name ${SERVER_NAME};
+        location / {
+            proxy_pass http://${DJANGO_HOST}:8001;
+        }
+        location /home {
+            proxy_pass http://${DJANGO_HOST}:8000;
+        }
+    }
+}
