@@ -1,19 +1,26 @@
+llm:
+  max_tokens: 4096
+  temperature: 0.3
+
 store:
   name: qdrant
+  infer:
+    min_score: 0.001
+    limit: 1
   main:
-    collection: megacad
+    collection_name: megacad
     host: qdrant
-    vector_size: 768
+    dim: 1024
     distance: Cosine
 
   config:
-    url: "localhost"
+    url: qdrant
     port: "6333"
     prefer_grpc: True
     timeout: 5
 
   create_collection:
-    name: "example_collection"
+    collection_name: "example_collection"
     dim: 1024
     distance: "cosine"
     timeout: 5

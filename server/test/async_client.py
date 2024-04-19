@@ -29,7 +29,7 @@ async def fetch_list_data(url):
         async with session.get(url) as response:
             if response.status == 200:
                 async for word in response.content:
-                    return json.loads()(word.decode("utf-8").strip())
+                    return json.loads((word.decode("utf-8").strip()))
             else:
                 raise Exception(f"Request failed with status code: {response.status}")
 
@@ -54,6 +54,16 @@ async def fetch_completion_data(url, data):
                 else:
                     text = await response.text()
                     yield text
+            else:
+                raise Exception(f"Request failed with status code: {response.status}")
+
+
+async def fetch_patch_data(url, feedback):
+    async with aiohttp.ClientSession() as session:
+        async with session.patch(url, params={"feedback": feedback}) as response:
+            if response.status == 200:
+                async for word in response.content:
+                    print(word.decode("utf-8").strip())
             else:
                 raise Exception(f"Request failed with status code: {response.status}")
 
@@ -130,6 +140,13 @@ async def main():
     st = time.time()
     url = f"http://localhost:8000/v1/chat/{chat_id}/retrieve"  # get (use valid, else will get 404 page not found)
     await fetch_get_data(url)
+    print(time.time() - st)
+
+    # feedback chat
+    st = time.time()
+    feedback = 3  # replace with your feedback value
+    url = f"http://localhost:8000/v1/chat/{chat_id}/"
+    await fetch_patch_data(url, feedback)
     print(time.time() - st)
 
     # delete the chat

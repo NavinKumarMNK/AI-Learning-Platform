@@ -5,22 +5,33 @@ from .views import (
     ChatRetrieveAPIView,
     ChatDeleteAPIView,
     ChatListAPIView,
-    ChatUpdateAPIView,
+    ChatCompletionAPIView,
+    ChatFeedbackUpdateAPIView,
 )
+
 
 app_name = "chat"
 
 urlpatterns = [
-    path("", ChatCreateAPIView.as_view(), name="chat-create"),
     path(
-        "<uuid:chat_id>",
-        ChatRetrieveAPIView.as_view(),
-        name="chat-retrieve",
+        "create",
+        ChatCreateAPIView.as_view(),
+        name="chat-create",
     ),
     path(
-        "<uuid:chat_id>/update",
-        ChatUpdateAPIView.as_view(),
+        "<uuid:chat_id>",
+        ChatCompletionAPIView.as_view(),
         name="chat-update",
+    ),
+    path(
+        "<uuid:chat_id>/",
+        ChatFeedbackUpdateAPIView.as_view(),
+        name="chat-feedback-update",
+    ),
+    path(
+        "<uuid:chat_id>/retrieve",
+        ChatRetrieveAPIView.as_view(),
+        name="chat-retrieve",
     ),
     path(
         "<uuid:chat_id>/delete",

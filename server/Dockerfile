@@ -46,6 +46,6 @@ RUN rm -rf /app/lib
 WORKDIR /app
 COPY . /app
 EXPOSE 8000
-ENV DJANGO_DEBUG=false
+ENV DJANGO_DEBUG=true
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]

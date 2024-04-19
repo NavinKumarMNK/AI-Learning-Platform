@@ -7,6 +7,8 @@ from django.conf import settings
 
 from rest_framework import generics, mixins, status
 from rest_framework.response import Response
+from rest_framework.request import Request
+
 
 from .models import Chat
 from .serializers import ChatSerializer
@@ -28,7 +30,7 @@ class ChatCreateAPIView(mixins.CreateModelMixin, generics.GenericAPIView):
     serializer_class = ChatSerializer
 
     @async_to_sync
-    async def post(self, request, *args, **kwargs):
+    async def post(self, request: Request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         await self.perform_create(serializer)
@@ -49,7 +51,7 @@ class ChatRetrieveAPIView(mixins.RetrieveModelMixin, generics.GenericAPIView):
     lookup_field = "chat_id"
 
     @async_to_sync
-    async def get(self, request, *args, **kwargs):
+    async def get(self, request: Request, *args, **kwargs) -> Response:
         response = self.retrieve(request, *args, **kwargs)
         logger.warning(response)
         return_data = {
@@ -68,7 +70,9 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
     lookup_field = "chat_id"
 
     @async_to_sync
-    async def post(self, request, *args, **kwargs):
+    async def post(
+        self, request: Request, *args, **kwargs
+    ) -> Response | StreamingHttpResponse:
         chat = self.get_object()
         payload: Dict = request.data
         messages = request.data["messages"]
@@ -154,13 +158,34 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
         asyncio.create_task(chat.update_messages(messages))
 
 
+class ChatFeedbackUpdateAPIView(generics.GenericAPIView):
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
+    lookup_field = "chat_id"
+
+    @async_to_sync
+    async def patch(self, request: Request, *args, **kwargs) -> Response:
+        feedback = request.query_params.get("feedback")
+        if feedback is None:
+            return Response(
+                {"detail": "Missing 'feedback' query parameter."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        instance = self.get_object()
+        instance.feedback = feedback
+        instance.save()
+
+        return Response(status=status.HTTP_200_OK)
+
+
 class ChatDeleteAPIView(mixins.DestroyModelMixin, generics.GenericAPIView):
     queryset = Chat.objects.all()
     serializer_class = ChatSerializer
     lookup_field = "chat_id"
 
     @async_to_sync
-    async def delete(self, request, *args, **kwargs):
+    async def delete(self, request: Request, *args, **kwargs) -> Response:
         return self.destroy(request, *args, **kwargs)
 
 
@@ -173,7 +198,7 @@ class ChatListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
         return queryset
 
     @async_to_sync
-    async def get(self, request, *args, **kwargs):
+    async def get(self, request: Request, *args, **kwargs) -> Response:
         response = self.list(request, *args, **kwargs)
         return_data = [
             {"chat_id": data["chat_id"], "title": data["title"]}
