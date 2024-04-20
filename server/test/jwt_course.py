@@ -5,6 +5,11 @@ import requests
 from getpass import getpass
 import pathlib
 import json
+import aiohttp
+import asyncio
+import aiofiles
+
+headers = {"Content-Type": "application/json"}
 
 
 @dataclass
@@ -18,12 +23,12 @@ class JWTClient:
     refresh: str = None
     # ensure this matches your simplejwt config
     header_type: str = "Bearer"
-    # this assumesy ou have DRF running on localhost:8000
-    base_endpoint = "http://localhost:8000/v1"
+    # this assumesy ou have DRF running on 172.16.0.57:9999
+    base_endpoint = "http://172.16.0.57:9999/v1"
     # this file path is insecure
     cred_path: pathlib.Path = pathlib.Path("creds.json")
 
-    def __post_init__(self):
+    def __post_init___(self):
         if self.cred_path.exists():
             """
             You have stored creds,
@@ -75,11 +80,8 @@ class JWTClient:
             """
             self.perform_auth()
 
-    def get_headers(self, header_type=None):
-        """
-        Default headers for HTTP requests
-        including the JWT token
-        """
+    async def get_headers(self, header_type=None):
+        """Default headers for HTTP requests including the JWT token"""
         _type = header_type or self.header_type
         token = self.access
         if not token:
@@ -150,93 +152,114 @@ class JWTClient:
             self.clear_tokens()
             return False
         refresh_data = r.json()
-        if not "access" in refresh_data:
+        if "access" not in refresh_data:
             self.clear_tokens()
             return False
         stored_data = {"access": refresh_data.get("access"), "refresh": self.refresh}
         self.write_creds(stored_data)
         return True
 
-    def create(self, endpoint=None, data=None, limit=3):
-        headers = self.get_headers()
-        if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/course/"
-        r = requests.post(endpoint, headers=headers, json=data)
-        if r.status_code != 201:
-            raise Exception(f"Request not complete {r.text}")
-        data = r.json()
-        return data
+    async def create(self, data):
+        # headers = await self.get_headers()
+        endpoint = f"{self.base_endpoint}/course/create"
+        async with aiohttp.ClientSession() as session:
+            async with session.post(endpoint, headers=headers, json=data) as response:
+                response.raise_for_status()  # Raise exception for non-2xx status codes
+                data = await response.json()
+                return data
 
-    def get(self, endpoint=None, course_id=None, limit=3):
-        headers = self.get_headers()
-        if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/course/{course_id}"
-        r = requests.get(endpoint, headers=headers)
-        if r.status_code != 200:
-            raise Exception(f"Request not complete {r.text}")
-        data = r.json()
-        return data
+    async def get(self, course_id):
+        # headers = await self.get_headers()
+        endpoint = f"{self.base_endpoint}/course/{course_id}/retrieve"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(endpoint, headers=headers) as response:
+                response.raise_for_status()
+                data = await response.json()
+                return data
 
-    def list(self, endpoint=None, limit=3):
-        headers = self.get_headers()
-        if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/course/courses"
-        r = requests.get(endpoint, headers=headers)
-        if r.status_code != 200:
-            raise Exception(f"Request not complete {r.text}")
-        data = r.json()
-        return data
+    async def update(self, course_id, data):
+        # headers = await self.get_headers()
+        endpoint = f"{self.base_endpoint}/course/{course_id}/update"
+        async with aiohttp.ClientSession() as session:
+            async with session.patch(endpoint, headers=headers, json=data) as response:
+                response.raise_for_status()
+                return response.status
 
-    def delete(self, endpoint=None, course_id=None, limit=3):
-        headers = self.get_headers()
-        if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/course/{course_id}/delete"
-        r = requests.delete(endpoint, headers=headers)
-        if r.status_code != 204:
-            raise Exception(f"Request not complete {r.text}")
-        data = r.status_code
-        return data
+    async def delete(self, course_id):
+        # headers = await self.get_headers()
+        endpoint = f"{self.base_endpoint}/course/{course_id}/delete"
+        async with aiohttp.ClientSession() as session:
+            async with session.delete(endpoint, headers=headers) as response:
+                response.raise_for_status()
+                return response.status
 
-    def update(self, endpoint=None, course_id=None, data=None, limit=3):
-        headers = self.get_headers()
-        if endpoint is None or self.base_endpoint not in str(endpoint):
-            endpoint = f"{self.base_endpoint}/course/{course_id}/update"
-        r = requests.patch(endpoint, headers=headers, json=data)
-        if r.status_code != 200:
-            raise Exception(f"Request not complete {r.text}")
-        data = r.json()
-        return data
+    async def upload_file(self, course_id, file_path, meta_data):
+        endpoint = f"{self.base_endpoint}/course/{course_id}/upload"
+
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=1800)) as session:
+            data = aiohttp.FormData()
+            data.add_field(
+                name="file",
+                value=open(file_path, "rb"),
+                filename="file.pdf",
+                content_type="application/pdf",
+            )
+            for key, value in meta_data.items():
+                data.add_field(key, value)
+            async with session.post(endpoint, data=data) as response:
+                return await response.json()
+
+
+async def main():
+    client = JWTClient()
+    import time
+
+    # create course
+    st = time.time()
+    import random
+
+    data = {
+        "name": str(random.randint(1, 1000000000)),
+        "description": "still better",
+        "instructor_name": "abcdef",
+    }
+    response = await client.create(data=data)
+    print(time.time() - st)
+    print(response)
+    course_id = response["course_id"]
+
+    # get the course details
+    st = time.time()
+    response = await client.get(course_id=course_id)
+    print(response)
+    print(time.time() - st)
+
+    # update the data in course
+    update_data = {
+        "description": "changed",
+        "instructor_name": "abcdef",
+    }
+    st = time.time()
+    response = await client.update(course_id=course_id, data=update_data)
+    print(response)
+    print(time.time() - st)
+
+    # upload a file for processing
+    file_path = "../temp/pdf_loader_test.pdf"
+    meta_data = {"start_pg_no": "15", "end_pg_no": "250"}
+    st = time.time()
+    response = await client.upload_file(
+        course_id=course_id, file_path=file_path, meta_data=meta_data
+    )
+    print(response)
+    print(time.time() - st)
+
+    # delete the record
+    st = time.time()
+    response = await client.delete(course_id=course_id)
+    print(response)
+    print(time.time() - st)
 
 
 if __name__ == "__main__":
-    """
-    Here's Simple example of how to use our client above.
-    """
-
-    # this will either prompt a login process
-    # or just run with current stored data
-    client = JWTClient()
-
-    data = {
-        "name": "Phy",
-        "description": "still better",
-        # "documents": ["ea9e3aa4-cc83-406b-a0f4-2eeaf5aabcda"]
-    }
-
-    course_id = "f890c4b2-bcd1-41d3-aebf-d91613897eb5"
-
-    # lookup_1_data = client.create(data=data, limit=5)
-    # lookup_1_data = client.get(course_id=course_id, limit=5)
-    lookup_1_data = client.list(limit=5)
-    # lookup_1_data = client.delete(course_id=course_id, limit=5)
-    # lookup_1_data = client.update(course_id=course_id, data=data, limit=5)
-    print(lookup_1_data)
-
-    # # We used pagination at our endpoint so we have:
-    # results = lookup_1_data.get('results')
-    # next_url = lookup_1_data.get('next')
-    # print("First lookup result length", len(results))
-    # if next_url:
-    #     lookup_2_data = client.list(endpoint=next_url)
-    #     results += lookup_2_data.get('results')
-    #     print("Second lookup result length", len(results))
+    asyncio.run(main())

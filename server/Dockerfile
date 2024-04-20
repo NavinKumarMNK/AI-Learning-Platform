@@ -33,7 +33,6 @@ COPY README.md pyproject.toml poetry.lock /app/
 
 # Poetry install
 ARG INSTALL_DEV=false
-RUN poetry update
 RUN if [ "$INSTALL_DEV" = "true" ]; then poetry install; else poetry install --only main; fi
 
 # install library
@@ -46,6 +45,6 @@ RUN rm -rf /app/lib
 WORKDIR /app
 COPY . /app
 EXPOSE 8000
-ENV DJANGO_DEBUG=false
+ENV DJANGO_DEBUG=true
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]

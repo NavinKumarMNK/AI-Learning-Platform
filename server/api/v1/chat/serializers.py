@@ -46,6 +46,14 @@ class TextField(serializers.CharField):
         return str(data)
 
 
+class TinyInt(serializers.IntegerField):
+    def to_representation(self, value):
+        return super().to_representation(value)
+
+    def to_internal_value(self, data):
+        return super().to_internal_value(data)
+
+
 class ChatSerializer(serializers.ModelSerializer):
     chat_id = UUIDField(required=False)
     user_id = UUIDField()
@@ -53,10 +61,19 @@ class ChatSerializer(serializers.ModelSerializer):
     updated_at = DateTimeField(required=False)
     messages = ListField(required=False)
     title = TextField(required=False)
+    feedback = TinyInt(default=0)
 
     class Meta:
         model = Chat
-        fields = ["chat_id", "user_id", "created_at", "updated_at", "messages", "title"]
+        fields = [
+            "chat_id",
+            "user_id",
+            "created_at",
+            "updated_at",
+            "messages",
+            "title",
+            "feedback",
+        ]
 
     def create(self, validated_data):
         return Chat.objects.create(**validated_data)

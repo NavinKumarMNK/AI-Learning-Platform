@@ -171,19 +171,13 @@ class VectorDB:
         Returns
         -------
         response
-            returns None if any error, else the response of the query
+            returns None if not found | error, else the response of the query
         """
         try:
             response = await self.client.grpc_collections.Get(
                 grpc.GetCollectionInfoRequest(collection_name=collection_name)
             )
-        except RpcError as e:
-            import traceback
-
-            print("An RPC error occurred:")
-            print(e)
-            print("Here's the traceback:")
-            traceback.print_exc()
+        except RpcError:
             return None
 
         return response

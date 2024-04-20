@@ -109,6 +109,7 @@ async def embed_endpoint(request: Request):
     """Returns a stream of 1024 random float vectors (placeholder)."""
     data = await request.json()
     req_type = data.get("type")
+    text_data = data.get("data")
 
     if req_type not in ["PASSAGE_EMBED", "QUERY_EMBED", "PLAIN_EMBED"]:
         detail = "Invalid embedding type. Valid types are: PASSAGE_EMBED, QUERY_EMBED, PLAIN_EMBED"
@@ -116,7 +117,9 @@ async def embed_endpoint(request: Request):
             [{"loc": ("query", "type"), "msg": detail, "type": "value_error"}]
         )
 
-    embedding = [float(random.randint(-100, 100)) for _ in range(1024)]
+    embedding = [
+        [float(random.random()) for _ in range(1024)] for i in range(len(text_data))
+    ]
     return JSONResponse(content={"embedding": embedding})
 
 

@@ -1,8 +1,8 @@
 pydantic==1.10.10
-fastapi>=0.108.0
+fastapi==0.108.0
 rich==12.6.0
 click==8.1
-starlette<=0.34.0
+starlette
 onnx>=1.16.0
 loguru
 numexpr

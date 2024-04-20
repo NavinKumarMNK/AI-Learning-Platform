@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from rest_framework import serializers
+from asgiref.sync import async_to_sync, sync_to_async
 
 from .models import Course
 
@@ -55,14 +56,13 @@ class CourseSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
-    def validate_name(self, value):
-        """
-        Check that the name is not empty and doesn't already exist.
-        """
+    @async_to_sync
+    async def validate_name(self, value):
+        """Check that the name is not empty and doesn't already exist."""
         if not value:
             raise serializers.ValidationError("Name cannot be empty.")
 
-        existing_course = Course.objects.filter(name=value).exists()
+        existing_course = await Course.objects.filter(name=value).aexists()
         if existing_course:
             raise serializers.ValidationError("Course name already exists.")
 

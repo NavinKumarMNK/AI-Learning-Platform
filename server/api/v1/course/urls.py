@@ -5,16 +5,25 @@ from .views import (
     CourseCreateAPIView,
     CourseRetrieveAPIView,
     CourseDeleteAPIView,
-    CourseListAPIView,
     CourseUpdateMixinAPIView,
+    CourseDocumentUploadAPIView,
 )
 
 app_name = "api.v1.course"
 
 urlpatterns = [
-    path("", CourseCreateAPIView.as_view(), name="course-create"),
     path(
-        "<uuid:course_id>",
+        "create",
+        CourseCreateAPIView.as_view(),
+        name="course-create",
+    ),
+    path(
+        "<uuid:course_id>/upload",
+        CourseDocumentUploadAPIView.as_view(),
+        name="course-upload",
+    ),
+    path(
+        "<uuid:course_id>/retrieve",
         CourseRetrieveAPIView.as_view(),
         name="course-retrieve",
     ),
@@ -27,10 +36,5 @@ urlpatterns = [
         "<uuid:course_id>/delete",
         CourseDeleteAPIView.as_view(),
         name="course-delete",
-    ),
-    path(
-        "courses",
-        CourseListAPIView.as_view(),
-        name="course-list",
     ),
 ]

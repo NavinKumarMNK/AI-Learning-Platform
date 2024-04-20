@@ -8,8 +8,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings")
 app = FastAPI()
 
 __all__ = [app]
-application = get_asgi_application()
+app = get_asgi_application()
 
-
-app.mount("/static", StaticFiles(directory="staticfiles"), name="static")
-app.mount("/", application)
+# app.mount("/static", StaticFiles(directory="staticfiles"), name="static")
+# app.mount("/", application)
