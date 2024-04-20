@@ -66,5 +66,9 @@ local-migrate:
 attach-cassandra:
 	docker-compose -p $(DEV_ENV_NAME) exec cassandra bash
 
+attach-postgres:
+	docker-compose -p $(DEV_ENV_NAME) exec postgres bash
+
+
 rm-pycache:
 	find . -type d -name __pycache__ -exec rm -r {} +

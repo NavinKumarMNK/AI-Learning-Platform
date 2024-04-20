@@ -1,5 +1,5 @@
 pydantic==1.10.10
-fastapi>=0.108.0
+fastapi==0.110.2
 rich==12.6.0
 click==8.1
 starlette<=0.34.0

@@ -53,7 +53,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "meglib.middleware.errors.Log500ErrorsMiddleware",
+    # "meglib.middleware.errors.Log500ErrorsMiddleware"
 ]
 
 # REST_FRAMEWORK = {
