@@ -23,8 +23,8 @@ class JWTClient:
     refresh: str = None
     # ensure this matches your simplejwt config
     header_type: str = "Bearer"
-    # this assumesy ou have DRF running on localhost:8000
-    base_endpoint = "http://localhost:8000/v1"
+    # this assumesy ou have DRF running on 172.16.0.57:9999
+    base_endpoint = "http://172.16.0.57:9999/v1"
     # this file path is insecure
     cred_path: pathlib.Path = pathlib.Path("creds.json")
 
@@ -196,7 +196,7 @@ class JWTClient:
     async def upload_file(self, course_id, file_path, meta_data):
         endpoint = f"{self.base_endpoint}/course/{course_id}/upload"
 
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=1800)) as session:
             data = aiohttp.FormData()
             data.add_field(
                 name="file",
@@ -245,8 +245,8 @@ async def main():
     print(time.time() - st)
 
     # upload a file for processing
-    file_path = "../temp/pdf_loader_test_1.pdf"
-    meta_data = {"start_pg_no": "1", "end_pg_no": "6"}
+    file_path = "../temp/pdf_loader_test.pdf"
+    meta_data = {"start_pg_no": "15", "end_pg_no": "250"}
     st = time.time()
     response = await client.upload_file(
         course_id=course_id, file_path=file_path, meta_data=meta_data

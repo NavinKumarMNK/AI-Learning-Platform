@@ -14,8 +14,8 @@ make run-dev  # run the docker-compose up
 
 ## Environment Variables Schema
 ```env
-POSTGRES_DB=postgres
-POSTGRES_USER=postgres
+POSTGRES_DB=megacad
+POSTGRES_USER=megacad
 POSTGRES_PASSWORD=postgres
 POSTGRES_HOST=postgres
 CASSANDRA_HOST=cassandra
@@ -24,13 +24,18 @@ CASSANDRA_PASSWORD=cassandra
 CASSANDRA_CLUSTER_NAME=cassandra
 CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
 CASSANDRA_KEYSPACE=megacad
+QDRANT_COLLECTION_NAME=megacad
+QDRANT_HOST=qdrant
 DJANGO_SECRET_KEY=django
 DJANGO_ADMIN_USERNAME=admin
 DJANGO_ADMIN_EMAIL_ID=admin
 DJANGO_ADMIN_PASSWORD=admin
-QDRANT_COLLECTION_NAME=qdrant
-QDRANT_HOST=qdrant
-ML_SERVICE_HOST=localhost
-ML_SERVICE_PORT=port
+ML_SERVICE_HOST=ml_service
+ML_SERVICE_PORT=5000
+ROOT_PATH=
+WEB_ADDRESS=megacad.com
+DJANGO_HOST=django
+LLM_ENDPOINT=/v1/llm
+EMBEDDING_ENDPOINT=/v1/embed
 ```
 

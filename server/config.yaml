@@ -5,8 +5,8 @@ llm:
 store:
   name: qdrant
   infer:
-    min_score: 0.001
-    limit: 1
+    min_score: 0.4
+    limit: 5
   main:
     collection_name: megacad
     host: qdrant
@@ -35,4 +35,4 @@ store:
 doc_processor:
   min_size: 1000
   overlap: 500
-  embed_max_batch_size: 32
+  embed_max_batch_size: 16

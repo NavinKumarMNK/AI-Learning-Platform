@@ -42,7 +42,10 @@ ray-exec:
 	ray exec config/ray/ray-cluster.yaml $(RAY_BASH_CODE)
 
 ray-serve-deploy:
-	serve deploy config/ray/ray-serve.yaml -v
+	serve deploy config/ray/ray-serve.yaml
+
+ray-serve-shutdown:
+	serve shudown -y
 
 ray-serve-run:
 	serve run config/ray/ray-serve.yaml

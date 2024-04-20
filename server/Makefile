@@ -1,9 +1,6 @@
 DEV_ENV_NAME = ailp-dev
 PROD_ENV_NAME = ailp-prod
 
-.PHONY = attach-cassandra clean-pycache run run-prod stop stop-prod clean logs restart images build build-prod up up-prod
-
-
 build:
 	docker-compose -p $(DEV_ENV_NAME) -f docker-compose.yaml build
 
@@ -45,9 +42,6 @@ rmi:
 logs: 
 	docker-compose -p $(DEV_ENV_NAME) logs -f
 
-attach:
-	docker-compose -p $(DEV_ENV_NAME) exec web bash
-
 restart:
 	make stop-dev
 	make run-dev  
@@ -63,12 +57,31 @@ local-migrate:
 	python3 manage.py makemigrations
 	python3 manage.py migrate
 
+attach:
+	docker-compose -p $(DEV_ENV_NAME) exec web bash
+
 attach-cassandra:
 	docker-compose -p $(DEV_ENV_NAME) exec cassandra bash
 
 attach-postgres:
 	docker-compose -p $(DEV_ENV_NAME) exec postgres bash
 
+attach-prod:
+	docker-compose -p $(PROD_ENV_NAME) exec web bash
+
+attach-cassandra-prod:
+	docker-compose -p $(PROD_ENV_NAME) exec cassandra bash
+
+attach-postgres-prod:
+	docker-compose -p $(PROD_ENV_NAME) exec postgres bash
+
+app-build:
+	bash download_static_files.sh
 
 rm-pycache:
 	find . -type d -name __pycache__ -exec rm -r {} +
+
+ssh-copy:
+	@echo "Copying file..."
+	scp -i /Users/mnk/.ssh/id_rsa_vit $(FILE) root@172.16.0.57:/root/navin-kumar/AI-Learning-Platform/server/temp/
+	@echo "File copied successfully."	

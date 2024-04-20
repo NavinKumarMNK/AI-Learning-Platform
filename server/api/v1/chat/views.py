@@ -76,8 +76,7 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
         chat = self.get_object()
         payload: Dict = request.data
         messages = request.data["messages"]
-        logger.info(payload)
-
+        
         # retrieve embedding for message
         embedding_msg = ""
         for message in messages[:-3] or messages:
@@ -85,12 +84,11 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
 
         embedding: Dict = await embed_api.query(
             payload={
-                "data": embedding_msg,
+                "data": [embedding_msg],
                 "type": "QUERY_EMBED",
             }
         )
-        embedding = embedding["embedding"]
-
+        embedding = embedding["embedding"][0]
         # vector search
         retrieved_content: Dict = qdrant_db.proto_to_dict(
             await qdrant_db.search(
@@ -100,18 +98,19 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
                 filters={"course_id": str(payload["course_id"])},
             )
         )
-        logger.info(retrieved_content)
 
         if "result" not in retrieved_content.keys():  # only contains time
+            content = ""
             pass
         else:
             content = ""
             cont_no = 1
+            # logger.info()
             for result in retrieved_content["result"]:
                 score = result["score"]
                 if score >= qdrant_config["infer"]["min_score"]:
                     content += (
-                        f" \n{cont_no}. {result['payload']['text']['stringValue']}"
+                        f" \n{cont_no}. {result['payload']['content']['stringValue']}"
                     )
                     cont_no += 1
 
@@ -120,8 +119,7 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
                     "Related Content: " + content + "\n" + messages[-1]["content"]
                 )
 
-        logger.info(messages)
-
+        
         # llm generation
         payload = {
             "messages": messages,
@@ -129,6 +127,7 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
             "max_tokens": llm_config.get("max_tokens", 1024),
             "temperature": llm_config.get("temperature", 0.7),
         }
+        logger.info(payload)
 
         if payload.get("stream", True):
             llm_response = self._consume_and_append(
@@ -140,9 +139,8 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
 
         else:
             llm_response = await llm_api.query_no_stream(payload=payload)
-            message = {"role": "assistant", "content": content}
+            message = {"role": "assistant", "content": llm_response['output']}
             messages.append(message)
-            logger.info(messages)
             asyncio.create_task(chat.update_messages(messages))
             return Response(data={"messages": llm_response})
 
@@ -154,7 +152,6 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
 
         message = {"role": "assistant", "content": content}
         messages.append(message)
-        logger.info(messages)
         asyncio.create_task(chat.update_messages(messages))
 
 

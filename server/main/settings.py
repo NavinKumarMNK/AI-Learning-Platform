@@ -21,7 +21,7 @@ CONFIG = base.load_config(BASE_DIR / "config.yaml")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
-DEBUG = os.environ.get("DJANGO_DEBUG", "False")
+DEBUG = os.environ.get("DJANGO_DEBUG", False)
 ALLOWED_HOSTS = ["*"]
 INTERNAL_IPS = ["127.0.0.1"]
 

@@ -132,13 +132,20 @@ class CourseDocumentUploadAPIView(
                 meta_data.append(doc.metadata)
 
         vector_batch = []
+        coroutines_lst = []
         for batch in self._get_batches(
             proc_docs, doc_proc_config["embed_max_batch_size"]
         ):
-            response = await embed_api.query(
-                payload={"type": "PASSAGE_EMBED", "data": batch}
+            logger.info(len(batch))
+            coroutines_lst.append(
+                embed_api.query(
+                    payload={"type": "PASSAGE_EMBED", "data": batch}
+                )
             )
-            vector_batch.extend(response["embedding"])
+
+        for coroutine in coroutines_lst:
+            res = await coroutine
+            vector_batch.extend(res["embedding"])
 
         await qdrant_db.insert(
             collection_name=qdrant_config["main"]["collection_name"],
@@ -165,6 +172,7 @@ class CourseDocumentUploadAPIView(
     async def post(self, request: Request, *args, **kwargs) -> Response:
         file = request.FILES.get("file")
         course_id = kwargs["course_id"]
+        logger.info(f"Recieved File for the course_id : {course_id}")
         try:
             meta_data = {
                 "start_page": int(request.data.get("start_pg_no")),
