@@ -1,5 +1,6 @@
 import traceback
 from pprint import pprint
+import pdb
 
 
 class Log500ErrorsMiddleware:
@@ -18,3 +19,13 @@ class Log500ErrorsMiddleware:
         pprint(traceback.format_exception(type(exception), exception, tb))
         pprint("----\n")
         return None
+
+
+class DebugPauseMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        pdb.set_trace()
+        response = self.get_response(request)
+        return response

@@ -97,7 +97,7 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
                 collection_name=qdrant_config["main"]["collection_name"],
                 vector=embedding,
                 limit=qdrant_config["infer"]["limit"],
-                filters={"course": payload["course"]},
+                filters={"course_id": str(payload["course_id"])},
             )
         )
         logger.info(retrieved_content)

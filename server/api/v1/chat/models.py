@@ -9,18 +9,20 @@ from django_cassandra_engine.models import DjangoCassandraModel
 from asgiref.sync import sync_to_async
 from django.conf import settings
 
+from django.utils import timezone
+
 
 class Chat(DjangoCassandraModel):
     chat_id = columns.UUID(primary_key=True, default=uuid.uuid4)
     user_id = columns.UUID(index=True)
-    created_at = columns.DateTime(default=datetime.utcnow)
-    updated_at = columns.DateTime(default=datetime.utcnow)
+    created_at = columns.DateTime(default=timezone.now())
+    updated_at = columns.DateTime(default=timezone.now())
     messages = columns.List(columns.Map(columns.Text, columns.Text), default=list)
     title = columns.Text(max_length=128)
     feedback = columns.TinyInt(default=0)
 
     async def async_save(self, *args, **kwargs):
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now()
         return super(Chat, self).save(*args, **kwargs)
 
     async def update_messages(self, message):

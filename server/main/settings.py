@@ -1,9 +1,10 @@
 import os
-from pathlib import Path
 import datetime
-
-from utils import base
 import logging
+
+from pathlib import Path
+from utils import base
+from django.core.files.storage import FileSystemStorage
 
 from meglib.ml.api import Llm, Embedding
 from meglib.ml.store import VectorDB
@@ -20,7 +21,7 @@ CONFIG = base.load_config(BASE_DIR / "config.yaml")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
-DEBUG = True  # os.environ.get("DJANGO_DEBUG", "False")
+DEBUG = os.environ.get("DJANGO_DEBUG", "False")
 ALLOWED_HOSTS = ["*"]
 INTERNAL_IPS = ["127.0.0.1"]
 
@@ -150,8 +151,12 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+TempFileSystemStorage = FileSystemStorage(location="/tmp")
 
 STORAGES = {
+    "temp_storage": {
+        "BACKEND": TempFileSystemStorage,
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
@@ -208,6 +213,6 @@ EMBED_API = Embedding(
 QDRANT_CONFIG = CONFIG["store"]
 LLM_CONFIG = CONFIG["llm"]
 QDRANT_DB = VectorDB(QDRANT_CONFIG["config"])
-
+DOC_PROC_CONFIG = CONFIG["doc_processor"]
 DOC_PROCESSOR = DocumentProcessor()
 PDF_LOADER = PDFLoader()

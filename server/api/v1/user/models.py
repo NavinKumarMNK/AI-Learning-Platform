@@ -8,7 +8,9 @@ from django.contrib.postgres.fields import ArrayField
 
 # from asgiref.sync import sync_to_async
 # from django.conf import settings
-# logger = settings.LOGGER
+import logging
+
+logger = logging.getLogger("django")
 
 
 class User(models.Model):
@@ -22,6 +24,6 @@ class User(models.Model):
     chat_ids = ArrayField(ArrayField(models.IntegerField()), default=list)
 
     def save(self, *args, **kwargs):
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now()
         super(User, self).save(*args, **kwargs)
         return self

@@ -10,7 +10,9 @@ from megacad.api.mixins import StaffEditorPermissionMixin
 
 # from asgiref.sync import sync_to_async, async_to_sync
 # from django.conf import settings
-# logger = settings.LOGGER
+import logging
+
+logger = logging.getLogger("django")
 
 
 class UserCreateAPIView(

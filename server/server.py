@@ -3,12 +3,12 @@
 
 import asyncio
 import os
-
 import django
+
+from uvicorn import Config, Server
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 
-from dotenv import load_dotenv
 from utils.base import load_env
 
 from django.conf import settings
@@ -35,17 +35,18 @@ async def create_main_qdrant_collection():
             distance="cosine",
             timeout=5,
         )
-    await qdrant_db.insert(
-        collection_name=qdrant_config["main"]["collection_name"],
-        data=[
-            {
-                "vector": [
-                    random.random() for x in range(qdrant_config["main"]["dim"])
-                ],
-                "payload": {"text": "Hi, This is Megacad", "course": "general"},
-            },
-        ],
-    )
+    if os.environ.get("DEBUG"):
+        await qdrant_db.insert(
+            collection_name=qdrant_config["main"]["collection_name"],
+            data=[
+                {
+                    "vector": [
+                        random.random() for x in range(qdrant_config["main"]["dim"])
+                    ],
+                    "payload": {"text": "Hi, This is Megacad", "course": "general"},
+                },
+            ],
+        )
 
 
 async def create_superuser():

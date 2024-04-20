@@ -92,7 +92,7 @@ async def main():
             {"role": "user", "content": "How are you?"},
         ],
         "stream": True,
-        "course": "general",
+        "course_id": "general",
     }
 
     if data["stream"]:
@@ -115,7 +115,7 @@ async def main():
             {"role": "user", "content": "This is X"},
         ],
         "stream": False,
-        "course": "general",
+        "course_id": "general",
     }
 
     if data["stream"]:
