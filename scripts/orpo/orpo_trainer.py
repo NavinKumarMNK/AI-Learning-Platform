@@ -40,7 +40,7 @@ model = AutoModelForCausalLM.from_pretrained(
 model, tokenizer = setup_chat_format(model, tokenizer)
 model = prepare_model_for_kbit_training(model)
 
-dataset_name = "mlabonne/orpo-dpo-mix-40k"
+dataset_name = configp['dataset']
 dataset = load_dataset(dataset_name, split="all")
 dataset = dataset.shuffle(seed=42).select(range(1000))
 

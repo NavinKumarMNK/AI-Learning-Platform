@@ -1,5 +1,6 @@
-base_model:   # base model path / uri of hugging-face
-new_model:   # new model path
+base_model: /data/nous-34b  # base model path / uri of hugging-face
+new_model: /data/orca-nous-34b  # new model path / uri
+dataset: Intel/orca_dpo_pairs  # dataset_path / uri
 bnb_config:
   # load_in_8bit: False 
   load_in_4bit: True
@@ -23,7 +24,7 @@ test_size: 0.1
 train_config:
   learning_rate: 8e-6
   lr_scheduler_type: "linear"
-  max_length: 1024
+  max_length: 4096
   max_prompt_length: 512
   beta: 0.1
   per_device_train_batch_size: 2
@@ -32,7 +33,7 @@ train_config:
   optim: "paged_adamw_8bit"
   num_train_epochs: 1
   evaluation_strategy: "steps"
-  eval_steps: 0.2  # Assuming this is intended to be a float
+  eval_steps: 0.2 
   logging_steps: 1
   warmup_steps: 10
   report_to: "wandb"

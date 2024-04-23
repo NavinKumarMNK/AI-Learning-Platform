@@ -1,9 +1,9 @@
 FROM pytorch
 
 WORKDIR /app
-COPY requirements.txt ./requirements.txt
 RUN conda install conda-forge::pyarrow
-RUN pip install -r requirements
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
 COPY . .
 
 # ENTRYPOINT [ "bash", "train.sh" ]
