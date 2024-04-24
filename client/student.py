@@ -39,8 +39,9 @@ class JWTClient:
 
     base_endpoint = "http://0.0.0.0:8000/v1"
 
-    async def create(data):
+    async def create(self, data):
         endpoint = f"{self.base_endpoint}/chat/create"
+
         async with aiohttp.ClientSession() as session:
             async with session.post(endpoint, json=data) as response:
                 if response.status == 201:
@@ -49,29 +50,36 @@ class JWTClient:
                 else:
                     raise Exception(f"Request failed with status code: {response.status}")
 
-    async def completion(url, data):
+    async def completion(self, chat_id, data):
+        endpoint = f"{self.base_endpoint}/chat/{chat_id}"
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=data) as response:
+            async with session.post(endpoint, json=data) as response:
                 if response.status == 200:
+                    messages = []
                     if data["stream"]:
                         async for line in response.content.iter_any():
-                            yield line.decode("utf-8").strip()
+                            messages.append(line.decode("utf-8").strip())
                     else:
                         text = await response.text()
-                        yield text
+                        messages.append(text)
+                    return messages
                 else:
                     raise Exception(f"Request failed with status code: {response.status}")
 
-    async def patch(url, feedback):
+    async def patch(self, chat_id, feedback):
+        endpoint = f"{self.base_endpoint}/chat/{chat_id}/"
+
         async with aiohttp.ClientSession() as session:
-            async with session.patch(url, params={"feedback": feedback}) as response:
+            async with session.patch(endpoint, params={"feedback": feedback}) as response:
                 if response.status == 200:
                     async for word in response.content:
                         print(word.decode("utf-8").strip())
                 else:
                     raise Exception(f"Request failed with status code: {response.status}")
 
-    async def generate_text(endpoint_url: str, payload: Dict) -> List[str]:
+    async def generate_text(self, chat_id: str, payload: Dict) -> List[str]:
+        
+        endpoint_url = f"{self.base_endpoint}/chat/{chat_id}"
         result = []
         headers = {"Content-Type": "application/json"}
 
@@ -110,10 +118,9 @@ async def create_chat(client: JWTClient, user_id: str):
     data = {
         "user_id": user_id,
     }
-    print(data)
     res = await client.create(data)
     chat_id = res["chat_id"]
-    print(chat_id)
+    return chat_id
 
 
 @click.command()
@@ -128,8 +135,7 @@ async def create_chat(client: JWTClient, user_id: str):
     help="Format of input, if prompt then \
               set True. Default is False ",
 )
-@coro
-async def main(
+def main(
     host: str,
     port: int,
     stream: bool,
@@ -154,8 +160,7 @@ Please be polite towards me & Remember, I can make mistakes too """)
 
 
     user_id = click.prompt("? Enter user id to login", type=str)
-    chat_id = await create_chat(client, user_id)
-
+    chat_id = asyncio.run(create_chat(client, user_id))
 
     i = 0
     while i <= 30:
@@ -170,7 +175,7 @@ Please be polite towards me & Remember, I can make mistakes too """)
                 console.print("New Session")
                 console.print(welcome_message)
 
-                chat_id = await create_chat(client, user_id)
+                chat_id = asyncio.run(create_chat(client, user_id))
 
                 continue
             elif user_message.strip() == "":
@@ -178,11 +183,13 @@ Please be polite towards me & Remember, I can make mistakes too """)
             elif user_message == "\\c":
                 console.clear()
                 continue
-            elif user_message == "\\f":
-                feedback = 3
-                url = f"http://localhost:8000/v1/chat/{chat_id}/"
-                await client.patch(url, feedback)
-                print("Feedback received")
+            elif user_message[:2] == "\\f":
+                for num in user_message:
+                    if num in ['1', '2', '3', '4', '5']:
+                        feedback = int(num)
+                        break
+                asyncio.run(client.patch(chat_id, feedback))
+                print("Feedback received", feedback)
                 continue
 
 
@@ -192,6 +199,7 @@ Please be polite towards me & Remember, I can make mistakes too """)
                     "stream": stream,
                     "max_tokens": max_tokens,
                     "temperature": temperature,
+                    "course_id": "general",
                 }
             else:
                 messages.append({"role": "user", "content": user_message})
@@ -200,15 +208,17 @@ Please be polite towards me & Remember, I can make mistakes too """)
                     "stream": stream,
                     "max_tokens": max_tokens,
                     "temperature": temperature,
+                    "course_id": "general",
                 }
 
             if stream:
-                assistant_message = asyncio.run(client.generate_text(url, payload))
-                assistant_message = "".join(assistant_message)
-                print("\n")
+                assistant_message = asyncio.run(client.completion(chat_id, payload))
+                assistant_message = " ".join(assistant_message)
+                sys.stdout.write(assistant_message + "\n")
             else:
-                result = asyncio.run(client.generate_text(url, payload))
-                assistant_message = result["output"]
+                print('entered')
+                result = asyncio.run(client.completion(chat_id, payload))
+                assistant_message = " ".join(assistant_message)
                 sys.stdout.write(assistant_message + "\n")
 
             messages.append({"role": "assistant", "content": assistant_message})
@@ -225,4 +235,4 @@ Please be polite towards me & Remember, I can make mistakes too """)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
