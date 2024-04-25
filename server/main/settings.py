@@ -109,7 +109,7 @@ DATABASES = {
         "USER": os.environ.get("CASSANDRA_USER"),
         "PASSWORD": os.environ.get("CASSANDRA_PASSWORD"),
         "OPTIONS": {
-            "replication": {"strategy_class": "SimpleStrategy", "replication_factor": 1}
+            "replication": {"strategy_class": "SimpleStrategy", "replication_factor": 2}
         },
     },
 }

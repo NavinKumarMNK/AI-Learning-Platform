@@ -48,7 +48,7 @@ services:
     ports:
       - "9999:8000"
     environment:
-      - DJANGO_DEBUG=True
+      - DJANGO_DEBUG=false
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
