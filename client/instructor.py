@@ -36,8 +36,8 @@ def coro(f):
 
 @dataclass
 class JWTClient:
-
-    base_endpoint = "http://0.0.0.0:8000/v1"
+    def __init__(self, endpoint):
+        self.base_endpoint = endpoint
 
     async def create(self, data):
         endpoint = f"{self.base_endpoint}/course/create"
@@ -46,11 +46,13 @@ class JWTClient:
                 response.raise_for_status()
                 data = await response.json()
                 return data
-            
+
     async def upload_file(self, course_id, file_path, meta_data):
         endpoint = f"{self.base_endpoint}/course/{course_id}/upload"
 
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=1800)) as session:
+        async with aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=1800)
+        ) as session:
             data = aiohttp.FormData()
             data.add_field(
                 name="file",
@@ -64,10 +66,9 @@ class JWTClient:
                 return await response.json()
 
 
-
 @click.command()
 @click.option("--host", default="localhost", help="Host")
-@click.option("--port", default=5000, help="Port")
+@click.option("--port", default=8000, help="Port")
 @click.option("--create-course", default=None, help="Create new course")
 @click.option("--upload", default=None, help="Upload new course content")
 @coro
@@ -78,15 +79,12 @@ async def main(
     upload: str,
 ):
     logging.basicConfig(level=logging.INFO)
-    console = Console()
 
-    client = JWTClient()
-    # client.base_endpoint = f"http://{host}:{port}/v1"
-
+    client = JWTClient(f"http://{host}:{port}/v1")
 
     if create_course:
-        course_description = click.prompt('? Like to give a description', type=str)
-        instructor_name = click.prompt("? Enter author's name", type=str)
+        course_description = click.prompt("? Like to give a description : ", type=str)
+        instructor_name = click.prompt("? Enter author's name : ", type=str)
 
         course_data = {
             "name": create_course,
@@ -94,11 +92,14 @@ async def main(
             "instructor_name": instructor_name,
         }
         response = await client.create(data=course_data)
-        print(response['course_id'])
+        print(response["course_id"])
 
     elif upload:
-        meta_data = {"start_pg_no": "1", "end_pg_no": "2"}
-        course_id = click.prompt('? Enter course id', type=str)
+        course_id = click.prompt("? Enter course id", type=str)
+        start_pgno = click.prompt("? Enter the starting pg no of the content: ")
+        end_pgno = click.prompt("? Enter the ending pg no of the content: ")
+        meta_data = {"start_pg_no": str(start_pgno), "end_pg_no": str(end_pgno)}
+
         response = await client.upload_file(
             course_id=course_id, file_path=upload, meta_data=meta_data
         )

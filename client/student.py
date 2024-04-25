@@ -36,8 +36,8 @@ def coro(f):
 
 @dataclass
 class JWTClient:
-
-    base_endpoint = "http://0.0.0.0:8000/v1"
+    def __init__(self, endpoint):
+        self.base_endpoint = endpoint
 
     async def create(self, data):
         endpoint = f"{self.base_endpoint}/chat/create"
@@ -48,37 +48,26 @@ class JWTClient:
                     async for word in response.content:
                         return json.loads(word.decode("utf-8").strip())
                 else:
-                    raise Exception(f"Request failed with status code: {response.status}")
-
-    async def completion(self, chat_id, data):
-        endpoint = f"{self.base_endpoint}/chat/{chat_id}"
-        async with aiohttp.ClientSession() as session:
-            async with session.post(endpoint, json=data) as response:
-                if response.status == 200:
-                    messages = []
-                    if data["stream"]:
-                        async for line in response.content.iter_any():
-                            messages.append(line.decode("utf-8").strip())
-                    else:
-                        text = await response.text()
-                        messages.append(text)
-                    return messages
-                else:
-                    raise Exception(f"Request failed with status code: {response.status}")
+                    raise Exception(
+                        f"Request failed with status code: {response.status}"
+                    )
 
     async def patch(self, chat_id, feedback):
         endpoint = f"{self.base_endpoint}/chat/{chat_id}/"
 
         async with aiohttp.ClientSession() as session:
-            async with session.patch(endpoint, params={"feedback": feedback}) as response:
+            async with session.patch(
+                endpoint, params={"feedback": feedback}
+            ) as response:
                 if response.status == 200:
                     async for word in response.content:
                         print(word.decode("utf-8").strip())
                 else:
-                    raise Exception(f"Request failed with status code: {response.status}")
+                    raise Exception(
+                        f"Request failed with status code: {response.status}"
+                    )
 
     async def generate_text(self, chat_id: str, payload: Dict) -> List[str]:
-        
         endpoint_url = f"{self.base_endpoint}/chat/{chat_id}"
         result = []
         headers = {"Content-Type": "application/json"}
@@ -96,8 +85,7 @@ class JWTClient:
                     if response.status_code == 200:
                         async for line in response.aiter_lines():
                             # Parse the line from a JSON string to a dictionary
-                            line_dict = json.loads(line)
-                            res = line_dict["output"]
+                            res = line
                             sys.stdout.write(res)
                             sys.stdout.flush()
                             result.append(res)
@@ -114,6 +102,7 @@ class JWTClient:
 
         return result
 
+
 async def create_chat(client: JWTClient, user_id: str):
     data = {
         "user_id": user_id,
@@ -125,7 +114,7 @@ async def create_chat(client: JWTClient, user_id: str):
 
 @click.command()
 @click.option("--host", default="localhost", help="Host")
-@click.option("--port", default=5000, help="Port")
+@click.option("--port", default=8000, help="Port")
 @click.option("--stream", default=True, help="Stream")
 @click.option("--max-tokens", default=4096, help="Max tokens")
 @click.option("--temperature", default=0.3, help="Temperature")
@@ -146,9 +135,7 @@ def main(
     logging.basicConfig(level=logging.INFO)
     console = Console()
 
-    client = JWTClient()
-    # client.base_endpoint = f"http://{host}:{port}/v1"
-
+    client = JWTClient(f"http://{host}:{port}/v1")
 
     welcome_message = Text("""Hello, this is MegAcad, your AI Educational Tutor 
 You can type the prompts or messages 
@@ -158,10 +145,10 @@ Please be polite towards me & Remember, I can make mistakes too """)
     messages = []
     session = PromptSession(history=FileHistory(".history"))
 
-
+    # user_id = 8d1c082a-95eb-4a8d-ab1b-1cfa0a63e21a
     user_id = click.prompt("? Enter user id to login", type=str)
     chat_id = asyncio.run(create_chat(client, user_id))
-
+    print(chat_id)
     i = 0
     while i <= 30:
         try:
@@ -185,13 +172,12 @@ Please be polite towards me & Remember, I can make mistakes too """)
                 continue
             elif user_message[:2] == "\\f":
                 for num in user_message:
-                    if num in ['1', '2', '3', '4', '5']:
+                    if num in ["1", "2", "3", "4", "5"]:
                         feedback = int(num)
                         break
                 asyncio.run(client.patch(chat_id, feedback))
                 print("Feedback received", feedback)
                 continue
-
 
             if is_prompt:
                 payload = {
@@ -212,17 +198,16 @@ Please be polite towards me & Remember, I can make mistakes too """)
                 }
 
             if stream:
-                assistant_message = asyncio.run(client.completion(chat_id, payload))
+                assistant_message = asyncio.run(client.generate_text(chat_id, payload))
                 assistant_message = " ".join(assistant_message)
                 sys.stdout.write(assistant_message + "\n")
             else:
-                print('entered')
-                result = asyncio.run(client.completion(chat_id, payload))
+                print("entered")
+                result = asyncio.run(client.generate_text(chat_id, payload))
                 assistant_message = " ".join(assistant_message)
                 sys.stdout.write(assistant_message + "\n")
 
             messages.append({"role": "assistant", "content": assistant_message})
-
 
         except Exception as e:
             print("\n")
@@ -230,8 +215,6 @@ Please be polite towards me & Remember, I can make mistakes too """)
             traceback.print_exc()
 
         i += 1
-    # console.end_capture()
-
 
 
 if __name__ == "__main__":
