@@ -88,7 +88,6 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
                 "type": "QUERY_EMBED",
             }
         )
-        logger.info(embedding_msg)
         embedding = embedding["embedding"][0]
         # vector search
         retrieved_content: Dict = qdrant_db.proto_to_dict(
@@ -96,10 +95,10 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
                 collection_name=qdrant_config["main"]["collection_name"],
                 vector=embedding,
                 limit=qdrant_config["infer"]["limit"],
-                filters={"course_id": str('8159e979-c87f-47ba-b482-9948854a52b7')},
+                filters={"course_id": str(payload["course_id"])},
             )
         )
-        logger.info(retrieved_content)
+
         if "result" not in retrieved_content.keys():  # only contains time
             content = ""
             pass
@@ -120,7 +119,6 @@ class ChatCompletionAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
                     "Related Content: " + content + "\n" + messages[-1]["content"]
                 )
 
-        logger.info(content)
         
         # llm generation
         payload = {
