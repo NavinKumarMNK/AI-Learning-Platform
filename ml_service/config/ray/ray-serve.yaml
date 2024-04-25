@@ -33,7 +33,7 @@ applications:
     user_config:
       sample: 123
     max_concurrent_queries: 32
-    #ray_actor_options:
+    # ray_actor_options:
     #  num_cpus: 32
     #  num_gpus: 4
     
@@ -45,7 +45,7 @@ applications:
     
   deployments:
   - name: EMBDeployment
-    num_replicas: 2
+    num_replicas: 1
     max_concurrent_queries: 32
     ray_actor_options:
-      num_cpus: 32
+      num_cpus: 64
