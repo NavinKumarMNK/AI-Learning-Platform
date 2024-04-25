@@ -1,0 +1,40 @@
+base_model: /data/nous-34b  # base model path / uri of hugging-face
+new_model: /data/orca-nous-34b  # new model path / uri
+dataset: Intel/orca_dpo_pairs  # dataset_path / uri
+bnb_config:
+  # load_in_8bit: False 
+  load_in_4bit: True
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: True
+peft_config:
+  r: 16
+  lora_alpha: 64
+  lora_dropout: 0.05
+  bias: none
+  task_type: CASUAL_LM
+  target_modules:
+    - up_proj
+    - down_proj
+    - gate_proj
+    - k_proj
+    - q_proj
+    - v_proj
+    - o_proj
+test_size: 0.1
+train_config:
+  learning_rate: 8e-6
+  lr_scheduler_type: "linear"
+  max_length: 4096
+  max_prompt_length: 512
+  beta: 0.1
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 4
+  optim: "paged_adamw_8bit"
+  num_train_epochs: 1
+  evaluation_strategy: "steps"
+  eval_steps: 0.2 
+  logging_steps: 1
+  warmup_steps: 10
+  report_to: "wandb"
+  output_dir: "./results/"
