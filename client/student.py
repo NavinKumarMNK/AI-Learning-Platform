@@ -179,13 +179,14 @@ Please be polite towards me & Remember, I can make mistakes too """)
                 print("Feedback received", feedback)
                 continue
 
+            course_id = "8159e979-c87f-47ba-b482-9948854a52b7"
             if is_prompt:
                 payload = {
                     "prompt": user_message,
                     "stream": stream,
                     "max_tokens": max_tokens,
                     "temperature": temperature,
-                    "course_id": "general",
+                    "course_id": course_id,
                 }
             else:
                 messages.append({"role": "user", "content": user_message})
@@ -194,7 +195,7 @@ Please be polite towards me & Remember, I can make mistakes too """)
                     "stream": stream,
                     "max_tokens": max_tokens,
                     "temperature": temperature,
-                    "course_id": "general",
+                    "course_id": course_id,
                 }
 
             if stream:

@@ -39,3 +39,13 @@ LLM_ENDPOINT=/v1/llm
 EMBEDDING_ENDPOINT=/v1/embed
 ```
 
+## Docker Swarm Deployment
+
+```bash
+docker swarm init
+set -a
+source .env
+set +a
+docker stack deploy -c docker-compose.swarm.yaml ailp-prod
+docker service scale ailp-prod_web=2     # scale the service
+```
